@@ -19,6 +19,8 @@ spec:
       containers:
       - name: stress-ng
         image: quay.io/kinvolk/stress-ng:latest-arm64
+        command:
+        - stress-ng
         args:
         - --cpu
         - "4"
