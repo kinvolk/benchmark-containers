@@ -21,4 +21,5 @@ The container ships release 0.10.07 of
 sysbench
 ========
 The container ships release 1.0.17 of
-[sysbench](https://github.com/akopytov/sysbench).
+[sysbench](https://github.com/akopytov/sysbench). The sysbench build includes
+support for MariaDB / MySQL benchmarking as well as LUA scripting.
