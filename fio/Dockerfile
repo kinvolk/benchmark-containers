@@ -1,5 +1,6 @@
 FROM alpine as dstat-builder
 MAINTAINER Kinvolk
+RUN apk add --update git
 RUN cd / && git clone https://github.com/dagwieers/dstat.git
 COPY ./dstat-types.patch /dstat/dstat-types.patch 
 RUN cd /dstat && \
@@ -9,7 +10,7 @@ RUN cd /dstat && \
 FROM alpine as builder
 WORKDIR /fio
 ENV FIO_VER=3.15
-ADD wget https://github.com/axboe/fio/archive/fio-${FIO_VER}.tar.gz .
+ADD https://github.com/axboe/fio/archive/fio-${FIO_VER}.tar.gz .
 RUN apk add --update alpine-sdk libaio-dev zlib-dev linux-headers coreutils
 RUN tar xzf fio-${FIO_VER}.tar.gz && \
     cd fio-fio-${FIO_VER} && \
