@@ -13,16 +13,15 @@ done
 
 [ -n "$cmdl_targets" ] && targets="$cmdl_targets"
 
+echo "#############  Building dependencies - dstat ###############"
+docker build -t dstat-builder "${build_root}/dstat"
+
 echo "#############  Building: $targets  ###############"
 
 for t in $targets; do
 	echo "----------------- $t -----------------"
-	cp ${build_root}/common/dstat-types.patch "${build_root}/$t/"
-	cd "${build_root}/$t"
 	tag=$(basename "$t")
-	docker build -t "$tag" .
-	rm dstat-types.patch
-	cd -
+	docker build -t "$tag" "${build_root}/$t"
 done
 
 echo "#############  DONE: $targets  ###############"

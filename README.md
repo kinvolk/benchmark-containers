@@ -10,13 +10,13 @@ The containers are based on [Alpine](https://alpinelinux.org/).
 
 Building
 ========
-As all containers share dstat, which needs a patch from `common/`, and since
-Docker cannot include files from outside its build directory, we provide a
-build script for creating container images: `build.sh` in the project root.
+All benchmark containers shiop dstat, which is built as a dependency.
+We provide a convenience build script for creating container images with this
+dependency: `build.sh` in the project root.
 
-Call `./build.sh` without arguments to buils all containers in the project, or
+Call `./build.sh` without arguments to build all containers in the project, or
 `./build.sh <container> [<container>] ...` to build individual containers
-(e.g. `./build.sh fio` to just build the Fio container.
+(e.g. `./build.sh fio` to just build the Fio container).
 
 fio container
 =============
