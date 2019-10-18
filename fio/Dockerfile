@@ -1,25 +1,30 @@
-FROM alpine as builder
+FROM alpine as dstat-builder
 MAINTAINER Kinvolk
-
-WORKDIR /usr/src
-RUN apk add --update alpine-sdk libaio-dev zlib-dev linux-headers coreutils
-RUN mkdir /fio && cd /fio   && \
-    wget https://github.com/axboe/fio/archive/fio-3.15.tar.gz && \
-    tar xzf fio-3.15.tar.gz && \
-    cd fio-fio-3.15 && \
-    ./configure && \
-    make -j && \
-    strip fio && \
-    mv fio ..
 RUN cd / && git clone https://github.com/dagwieers/dstat.git
 COPY ./dstat-types.patch /dstat/dstat-types.patch 
 RUN cd /dstat && \
     patch <dstat-types.patch
 
 
+FROM alpine as builder
+WORKDIR /fio
+ENV FIO_VER=3.15
+ADD wget https://github.com/axboe/fio/archive/fio-${FIO_VER}.tar.gz .
+RUN apk add --update alpine-sdk libaio-dev zlib-dev linux-headers coreutils
+RUN tar xzf fio-${FIO_VER}.tar.gz && \
+    cd fio-fio-${FIO_VER} && \
+    ./configure && \
+    make -j && \
+    strip fio && \
+    mv fio /fio/
+
+
 FROM alpine
 MAINTAINER Kinvolk
-RUN apk add --update --no-cache libaio zlib so:libgcc_s.so.1 py2-six
+# dstat
+RUN apk add --update --no-cache py2-six
+COPY --from=dstat-builder /dstat/dstat /usr/local/bin
+COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
+# fio
+RUN apk add --update --no-cache libaio zlib so:libgcc_s.so.1
 COPY --from=builder /fio/fio /usr/local/bin
-COPY --from=builder /dstat/dstat /usr/local/bin
-COPY --from=builder /dstat/plugins /usr/local/bin/

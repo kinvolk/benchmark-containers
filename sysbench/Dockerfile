@@ -1,33 +1,31 @@
-FROM alpine as builder
+FROM alpine as dstat-builder
 MAINTAINER Kinvolk
+RUN cd / && git clone https://github.com/dagwieers/dstat.git
+COPY ./dstat-types.patch /dstat/dstat-types.patch 
+RUN cd /dstat && \
+	patch <dstat-types.patch
 
-# intall gcc and supporting packages
-RUN apk add --update alpine-sdk git linux-headers automake autoconf libtool libaio-dev openssl-dev libunwind-dev mysql-dev
 
-# download sysbench sources
-WORKDIR /code
+FROM alpine as builder
+WORKDIR /sysbench
+MAINTAINER Kinvolk
 ENV SYSBENCH_VER=1.0.17
 ADD https://github.com/akopytov/sysbench/archive/${SYSBENCH_VER}.tar.gz .
-RUN tar -xf ${SYSBENCH_VER}.tar.gz && mv sysbench-${SYSBENCH_VER} sysbench
+RUN apk add --update alpine-sdk git linux-headers automake autoconf libtool libaio-dev openssl-dev libunwind-dev mysql-dev
+RUN tar -xf ${SYSBENCH_VER}.tar.gz && \
+	cd sysbench-${SYSBENCH_VER} && \
+	export TARGET_LIBS=-lunwind;./autogen.sh && \
+	./configure && \
+	make -j && \
+	make DESTDIR=/sysbench/sysbench-install-root/ install
 
-WORKDIR /code/sysbench
-RUN export TARGET_LIBS=-lunwind;./autogen.sh && ./configure && make -j && make DESTDIR=/tmp/sysbench-install-root/ install
 
-# add dstat
-WORKDIR /code
-RUN git clone https://github.com/dagwieers/dstat.git
-COPY ./dstat-types.patch /code/dstat/dstat-types.patch 
-RUN cd dstat && \
-    patch <dstat-types.patch
-
-# Final image
 FROM alpine
 MAINTAINER Kinvolk
-
-RUN apk add --update --no-cache py2-six so:libgcc_s.so.1 so:libmariadb.so.3 so:libaio.so.1
-COPY --from=builder /tmp/sysbench-install-root/ /
-COPY --from=builder /code/dstat/dstat /usr/local/bin/
-COPY --from=builder /code/dstat/plugins /usr/local/bin/
-
-USER nobody
-WORKDIR /tmp
+# dstat
+RUN apk add --update --no-cache py2-six
+COPY --from=dstat-builder /dstat/dstat /usr/local/bin
+COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
+# sysbench
+RUN apk add --update --no-cache so:libgcc_s.so.1 so:libmariadb.so.3 so:libaio.so.1
+COPY --from=builder /sysbench/sysbench-install-root/ /
