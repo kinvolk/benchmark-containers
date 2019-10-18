@@ -10,7 +10,7 @@ The containers are based on [Alpine](https://alpinelinux.org/).
 
 Building
 ========
-All benchmark containers shiop dstat, which is built as a dependency.
+All benchmark containers ship `dstat`, which is built as a dependency.
 We provide a convenience build script for creating container images with this
 dependency: `build.sh` in the project root.
 
