@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+grep -qE '^ID=flatcar' /usr/share/coreos/os-release || {
+		echo "ERROR: unable to identify the running OS as Flatcar" >&2
+		echo "'ID=flatcar' missing from /usr/share/coreos/os-release" >&2
+		echo "Please run this build on Flatcar OS." 2>&1
+		exit 1
+}
+
 # http://distfiles.gentoo.org/releases/amd64/autobuilds/20191020T214501Z/stage3-amd64-20191020T214501Z.tar.xz
 gentoo_stage3_url="http://distfiles.gentoo.org/experimental/arm64/stage3-arm64-20190613.tar.bz2"
 gentoo_stage3=$(basename ${gentoo_stage3_url})
