@@ -45,3 +45,5 @@ The container ships the version of
 Flatcar kernel release the container is built on. Please note that the build is
 platform / release specific. Also, the build contains a number of workarounds
 compensating for transient shortcomings in the Flatcar SDK.
+**Please note** that the build currently needs to be executed on a Flatcar
+instance.  We are working on improving the build.
