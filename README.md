@@ -18,6 +18,10 @@ Call `./build.sh` without arguments to build all containers in the project, or
 `./build.sh <container> [<container>] ...` to build individual containers
 (e.g. `./build.sh fio` to just build the Fio container).
 
+**Please note** that the `perf` container currently needs to be built
+separately from `./build.sh` as the `perf` build currently contains a number
+of workarounds.
+
 fio container
 =============
 The FIO container ships release 3.15 of the
@@ -33,3 +37,11 @@ sysbench container
 The container ships release 1.0.17 of
 [sysbench](https://github.com/akopytov/sysbench). The sysbench build includes
 support for MariaDB / MySQL benchmarking as well as LUA scripting.
+
+perf container
+==============
+The container ships the version of
+[perf](https://perf.wiki.kernel.org/index.php/Main_Page) that belongs to the
+Flatcar kernel release the container is built on. Please note that the build is
+platform / release specific. Also, the build contains a number of workarounds
+compensating for transient shortcomings in the Flatcar SDK.
