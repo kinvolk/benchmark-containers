@@ -2,7 +2,7 @@
 
 grep -qE '^ID=flatcar' /etc/os-release || {
 		echo "ERROR: unable to identify the running OS as Flatcar" >&2
-		echo "'ID=flatcar' missing from /usr/share/coreos/os-release" >&2
+		echo "'ID=flatcar' missing from /etc/os-release" >&2
 		echo "Please run this build on Flatcar OS." 2>&1
 		exit 1
 }
