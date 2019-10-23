@@ -1,5 +1,5 @@
 FROM alpine as builder
-WORKDIR /iperf-build
+WORKDIR /usr/src/iperf
 ENV IPERF_VER=3.7
 ADD  https://github.com/esnet/iperf/archive/${IPERF_VER}.tar.gz .
 RUN apk add --update alpine-sdk libtool autoconf automake openssl-dev
