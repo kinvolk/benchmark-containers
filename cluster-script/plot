@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+import numpy as np
+import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+import argparse
+
+parser = argparse.ArgumentParser(description="Plot two CSV results for comparison.")
+parser.add_argument("--parameter", dest="parameter", action="store_true", help="Include parameter in description")
+parser.add_argument("--outfile", type=str, help="Name of the SVG output file")
+parser.add_argument("--cost", dest="cost", action="store_true", help="Plot perf/cost")
+parser.add_argument("resultcolumn", type=str)
+parser.add_argument("csvfiles", type=str, nargs='+', help="CSV files")
+parser.set_defaults(logy=False, outfile='out.svg')
+args = parser.parse_args()
+
+d = pd.concat([pd.read_csv(i) for i in args.csvfiles])
+
+title = d['Name'].values[0] + ((': ' + d['Parameter'].values[0]) if args.parameter else '')
+types = 'System'
+results = args.resultcolumn
+d = d.sort_values(by=[types])
+d[types] = [l.replace(' (', '\n(') for l in d[types]]
+if args.cost:
+  costs = results + '/$'
+  d[costs] = [float(l)/float(c) for l, c in zip(d[results], d['Cost'])]
+  results = costs
+ts = d[types].unique()
+
+df = pd.DataFrame({types: ts, results: [d[d[types]==t][results].mean() for t in ts], 'std': [d[d[types]==t][results].std() for t in ts]})
+
+fontsize = 18
+plt.rc('legend', fontsize=fontsize)  # see https://stackoverflow.com/a/39566040 for more options
+plt.rc('font', size=fontsize)
+plt.rc('axes', labelsize=fontsize)
+p=df.plot(kind='barh', x=types, y=results, xerr='std', title=title, figsize=(15, 8), fontsize=fontsize)
+
+plt.tight_layout()
+plt.savefig(args.outfile)

@@ -47,3 +47,27 @@ platform / release specific. Also, the build contains a number of workarounds
 compensating for transient shortcomings in the Flatcar SDK.
 **Please note** that the build currently needs to be executed on a Flatcar
 instance.  We are working on improving the build.
+
+# Kubernetes cluster benchmark
+The `cluster-script` folder contains scripts to run the benchmark containers
+on Kubernetes clusters and compare the results.
+
+The `run-for-list.sh` script runs the benchmark for all clusters provided in
+a configuration file.
+
+The `benchmark.sh` script works on a single cluster per invocation.
+It covers automatic creation of K8s Jobs for sysbench cpu and memory benchmarks,
+gathering the results as CSV files and plotting them together with previous
+results as graphs for comparison.
+
+The benchmark results are stored in the cluster as long as the jobs
+are not cleaned-up. The gather process exports them to local files
+and combines the result with any existing local files.
+Therefore, the intended usage is to gather the results for various clusters
+into one directory.
+By keeping the cleanup process of Jobs in the cluster optional, multiple
+clients can access the results without sharing the CSV files.
+Old results can be cleaned-up to speed up the gathering and they are included
+in the plotted graphs as long as their CSV files are still in the current folder.
+
+
