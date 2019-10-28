@@ -1,13 +1,19 @@
 #!/bin/bash
 # Docker build helper to build one, or multiple, benchmark container(s)
 
-targets="fio stress-ng sysbench"
+targets="fio stress-ng sysbench iperf3"
 cmdl_targets=""
 
 build_root=$(dirname "${BASH_SOURCE[0]}")
 
 while [ 0 -lt $# ]; do
-	[ -d "$1" ] && cmdl_targets="$cmdl_targets $1"
+	if [ -d "$1" ] ; then
+		cmdl_targets="$cmdl_targets $1"
+	else
+		echo " ## ERROR - Unsupported build target: $1" >&2
+		echo " ## Supported targets are: $targets" >&2
+		exit 1
+	fi
 	shift
 done
 
