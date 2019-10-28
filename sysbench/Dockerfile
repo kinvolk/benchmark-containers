@@ -19,5 +19,5 @@ RUN apk add --update --no-cache py2-six
 COPY --from=dstat-builder /dstat/dstat /usr/local/bin
 COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
 # sysbench
-RUN apk add --update --no-cache so:libgcc_s.so.1 so:libmariadb.so.3 so:libaio.so.1
+RUN apk add --update --no-cache util-linux so:libgcc_s.so.1 so:libmariadb.so.3 so:libaio.so.1
 COPY --from=builder /sysbench/sysbench-install-root/ /

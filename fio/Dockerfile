@@ -18,5 +18,5 @@ RUN apk add --update --no-cache py2-six
 COPY --from=dstat-builder /dstat/dstat /usr/local/bin
 COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
 # fio
-RUN apk add --update --no-cache libaio zlib so:libgcc_s.so.1
+RUN apk add --update --no-cache util-linux libaio zlib so:libgcc_s.so.1
 COPY --from=builder /fio/fio /usr/local/bin
