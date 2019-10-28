@@ -38,6 +38,10 @@ The container ships release 1.0.17 of
 [sysbench](https://github.com/akopytov/sysbench). The sysbench build includes
 support for MariaDB / MySQL benchmarking as well as LUA scripting.
 
+iperf3 container
+================
+The container ships release 3.7 of [iperf](https://github.com/esnet/iperf/).
+
 perf container
 ==============
 The container ships the version of
