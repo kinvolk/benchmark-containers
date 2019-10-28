@@ -17,4 +17,5 @@ RUN apk add --update --no-cache py2-six
 COPY --from=dstat-builder /dstat/dstat /usr/local/bin
 COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
 # stress-ng
+RUN apk add --update --no-cache util-linux
 COPY --from=builder /stress-ng/stress-ng /sbin/
