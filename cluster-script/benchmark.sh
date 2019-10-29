@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+script_dir=$(dirname "${BASH_SOURCE[0]}")
 
 COMBINATIONS="benchmark+gather benchmark+gather+plot gather+plot gather+plot+cleanup benchmark+gather+cleanup benchmark+gather+plot+cleanup"
 
@@ -53,6 +54,8 @@ VARS+=' sysbench,mem-one,--threads=1,MiB/sec sysbench,mem-cores,--threads=$CORES
 VARS+=' sysbench,cpu-one,--threads=1,Events/s sysbench,cpu-cores,--threads=$CORES,Events/s sysbench,cpu-all,--threads=$CPUS,Events/s'
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
+  echo "Deploying helpers"
+  kubectl apply -f ${script_dir}/helpers.yaml
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
     MODE="$JOBNAME"
@@ -104,5 +107,6 @@ if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
       kubectl delete job -n benchmark "$j"
     done
   done
+  kubectl delete -f ${script_dir}/helpers.yaml
   echo "done with cleanup"
 fi
