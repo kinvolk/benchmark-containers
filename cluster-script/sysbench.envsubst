@@ -44,7 +44,7 @@ spec:
             SOCKETS=$(/scripts/cpu.sh sockets)
             CPUS=$(/scripts/cpu.sh cpus)
             CORES=$(/scripts/cpu.sh cores)
-            CPU=$(/scripts/cpu.sh arch)
+            CPU=$(/scripts/cpu.sh model)
             HYPERTHREADING=$(/scripts/cpu.sh ht)
             SYSTEM="$CPU (Sockets: $SOCKETS. CPUs: $CPUS. Cores: $CORES. HT: $HYPERTHREADING)"
             # MODE, PARAMETER, RESULT, ID, ITERATIONS, COST, and META are not shell variables. PARAMETER can contain references to shell variables, so it's quoted in '' in the CSV line.

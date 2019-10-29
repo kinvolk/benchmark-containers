@@ -75,11 +75,20 @@ data:
     }
     # --
 
+    # Prints CPU manufacturer / Model name & revision
+    function get_model() {
+        lscpu | awk '/^Vendor ID:/ {$1=""; $2=""; s=s $0}
+                     /^Model name:/ {$1=""; $2=""; s=s $0}
+                     END {print s}'
+    }
+    # --
+
     case $1 in
        arch) get_arch;;
        cpus) get_num_cpus;;
        ht) get_ht;;
        cores) get_num_cores;;
        sockets) get_num_sockets;;
+       model) get_model;;
        *) echo "Unknown argument '$1'" >&2;;
     esac

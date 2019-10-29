@@ -45,8 +45,6 @@ if [ "$arg" != "plot" ]; then
   echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\""
 fi
 
-# Assuming that the envsubst templates are in the same folder as this script
-P="$(dirname "$(readlink -f "$(which "$0")")")"
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
 # Warning, the one JOBNAME should not be a valid prefix for another because of globbing.
 VARS='sysbench,fileio-one,--threads=1,MiB/sec sysbench,fileio-cores,--threads=$CORES,MiB/sec sysbench,fileio-all,--threads=$CPUS,MiB/sec'
@@ -63,7 +61,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     echo "starting $JOBTYPE$JOBNAME$ID"
     export MODE ID PARAMETER RESULT ARCH COST META ITERATIONS
     # Here "export" is needed so that the envubst process can see the variables
-    cat "$P/$JOBTYPE.envsubst" | envsubst '$MODE $ID $PARAMETER $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
+    cat "$script_dir/$JOBTYPE.envsubst" | envsubst '$MODE $ID $PARAMETER $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
     while true; do
       status="$(kubectl get job -n benchmark "$JOBTYPE$JOBNAME$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then
@@ -92,10 +90,10 @@ fi
 if [ "$(echo "$arg" | grep plot)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    "$P/plot" --parameter --outfile="$JOBTYPE$JOBNAME.svg" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$P/plot" --parameter --outfile="$JOBTYPE$JOBNAME.png" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$P/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME-cost.svg" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$P/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME-cost.png" "$RESULT" "$JOBTYPE$JOBNAME"*csv
+    "$script_dir/plot" --parameter --outfile="$JOBTYPE$JOBNAME.svg" "$RESULT" "$JOBTYPE$JOBNAME"*csv
+    "$script_dir/plot" --parameter --outfile="$JOBTYPE$JOBNAME.png" "$RESULT" "$JOBTYPE$JOBNAME"*csv
+    "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME-cost.svg" "$RESULT" "$JOBTYPE$JOBNAME"*csv
+    "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME-cost.png" "$RESULT" "$JOBTYPE$JOBNAME"*csv
   done
   echo "done plotting"
 fi
