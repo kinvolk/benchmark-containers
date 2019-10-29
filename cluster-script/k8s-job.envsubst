@@ -6,10 +6,10 @@ metadata:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: sysbench$MODE$ID
+  name: $JOBTYPE$MODE$ID
   namespace: benchmark
   labels:
-    app: sysbench$MODE
+    app: $JOBTYPE$MODE
 spec:
   template:
     spec:
@@ -27,7 +27,7 @@ spec:
         volumeMounts:
           - mountPath: /tmp
             name: tmpfs-volume
-        image: quay.io/kinvolk/sysbench:latest-$ARCH
+        image: quay.io/kinvolk/$JOBTYPE:latest-$ARCH
         command: ["/bin/sh", "-c"]
         args:
           - |-
@@ -48,19 +48,18 @@ spec:
             CPU="$( (grep 'model name' /proc/cpuinfo ; (if [ "$(uname -m)" = aarch64 ] && [ "$CPUS" = 32 ]; then echo Ampere eMAG; else echo unknown ; fi)) | head -n 1 | cut -d : -f 2- | xargs)"
             HYPERTHREADING="$( ([ -f /sys/devices/system/cpu/smt/control ] && cat /sys/devices/system/cpu/smt/control) || echo n/a)"
             SYSTEM="$CPU (Sockets: $SOCKETS. CPUs: $CPUS. Cores: $CORES. HT: $HYPERTHREADING)"
-            # MODE, PARAMETER, RESULT, ID, ITERATIONS, COST, and META are not shell variables. PARAMETER can contain references to shell variables, so it's quoted in '' in the CSV line.
-            if [ $MODE = mem-one ] || [ $MODE = mem-all ] || [ $MODE = mem-cores ]; then
-              echo "CSV:Name,Parameter,System,$RESULT,Job,Cost,Meta"
+            # JOBTYPE, MODE, PARAMETER, RESULT, ID, ITERATIONS, COST, and META are not shell variables.
+            # PARAMETER can contain references to shell variables, so it's quoted in '' in the CSV line.
+            echo "CSV:Name,Parameter,System,$RESULT,Job,Cost,Meta"
+            if [ $JOBTYPE = sysbench ] && ([ $MODE = mem-one ] || [ $MODE = mem-all ] || [ $MODE = mem-cores ]); then
               for i in $(seq 1 $ITERATIONS); do
                 sysbench $PARAMETER --time=30 memory --memory-total-size=500G run | tee /dev/stderr | grep 'MiB/sec' | cut -d '(' -f 2 | cut -d ' ' -f 1 | printf 'CSV:sysbench memory,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
               done
-            elif [ $MODE = cpu-one ] || [ $MODE = cpu-all ] || [ $MODE = cpu-cores ]; then
-              echo "CSV:Name,Parameter,System,$RESULT,Job,Cost,Meta"
+            elif [ $JOBTYPE = sysbench ] && ([ $MODE = cpu-one ] || [ $MODE = cpu-all ] || [ $MODE = cpu-cores ]); then
               for i in $(seq 1 $ITERATIONS); do
                 sysbench $PARAMETER --time=30 cpu run | tee /dev/stderr | grep 'events per second' | cut -d : -f 2 | xargs | printf 'CSV:sysbench cpu,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
               done
-            elif [ $MODE = fileio-one ] || [ $MODE = fileio-all ] || [ $MODE = fileio-cores ]; then
-              echo "CSV:Name,Parameter,System,$RESULT,Job,Cost,Meta"
+            elif [ $JOBTYPE = sysbench ] && ([ $MODE = fileio-one ] || [ $MODE = fileio-all ] || [ $MODE = fileio-cores ]); then
               cd /tmp
               sysbench fileio --file-test-mode=rndwr prepare
               for i in $(seq 1 $ITERATIONS); do

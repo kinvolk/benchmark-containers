@@ -58,9 +58,9 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     MODE="$JOBNAME"
     ID="$(date +%s%4N | tail -c +5)-$RANDOM"
     echo "starting $JOBTYPE$JOBNAME$ID"
-    export MODE ID PARAMETER RESULT ARCH COST META ITERATIONS
+    export JOBTYPE MODE ID PARAMETER RESULT ARCH COST META ITERATIONS
     # Here "export" is needed so that the envubst process can see the variables
-    cat "$P/$JOBTYPE.envsubst" | envsubst '$MODE $ID $PARAMETER $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
+    cat "$P/k8s-job.envsubst" | envsubst '$JOBTYPE $MODE $ID $PARAMETER $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
     while true; do
       status="$(kubectl get job -n benchmark "$JOBTYPE$JOBNAME$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then
