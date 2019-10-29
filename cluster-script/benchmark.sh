@@ -16,7 +16,9 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  COST:       Stores an additional cost/hour value, e.g., 1.0"
   echo "  META:       Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
   echo "Optional env variables:"
-  echo "  ITERATIONS=1: Number of runs inside a Job"
+  echo "  ITERATIONS=1:                     Number of runs inside a Job"
+  echo "  SYSBENCH=\"fileio mem cpu\":      Space-separated list of sysbench benchmarks to run (limited to the named ones)"
+  echo "  STRESSNG=\"(default in source)\": Speace-separated list of stress-ng benchmarks to run (accepts any valid names)"
   echo
   echo "The benchmark results are stored in the cluster as long as the jobs are not cleaned-up."
   echo "The gather process exports them to local files and combines the result with any existing local files."
@@ -46,11 +48,23 @@ fi
 
 # Assuming that the envsubst templates are in the same folder as this script
 P="$(dirname "$(readlink -f "$(which "$0")")")"
+
+STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
+SYSBENCH="${SYSBENCH-fileio mem cpu}"
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
 # Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
-VARS='sysbench,fileio,$ONE,MiB/sec sysbench,fileio,$CORES,MiB/sec sysbench,fileio,$CPUS,MiB/sec'
-VARS+=' sysbench,mem,$ONE,MiB/sec sysbench,mem,$CORES,MiB/sec sysbench,mem,$CPUS,MiB/sec'
-VARS+=' sysbench,cpu,$ONE,Events/s sysbench,cpu,$CORES,Events/s sysbench,cpu,$CPUS,Events/s'
+VARS=''
+for S in $STRESSNG; do
+  VARS+="$(printf ' stress-ng,%s,$ONE,bogo-ops/s stress-ng,%s,$CORES,bogo-ops/s stress-ng,%s,$CPUS,bogo-ops/s' "$S" "$S" "$S")"
+done
+for S in $SYSBENCH; do
+  if [ "$S" = cpu ]; then
+    COL="Events/s"
+  else
+    COL="MiB/sec"
+  fi
+  VARS+="$(printf ' sysbench,%s,$ONE,%s sysbench,%s,$CORES,%s sysbench,%s,$CPUS,%s' "$S" "$COL" "$S" "$COL" "$S" "$COL")"
+done
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   for VAR in $VARS; do

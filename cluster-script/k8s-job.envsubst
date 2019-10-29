@@ -67,6 +67,10 @@ spec:
               for i in $(seq 1 $ITERATIONS); do
                 sysbench --threads=$PARAMETER --time=30 fileio --file-test-mode=rndwr run | tee /dev/stderr | grep 'written, MiB/s' | cut -d : -f 2 | xargs | printf 'CSV:sysbench fileio --file-test-mode=rndwr,--threads=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
               done
+            elif [ $JOBTYPE = stress-ng ]; then
+              for i in $(seq 1 $ITERATIONS); do
+                stress-ng --$MODE $PARAMETER --timeout 30s --metrics-brief 2>&1 | grep $MODE | tail -n 1 | awk '{print $9}' | printf 'CSV:stress-ng $MODE,threads=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+              done
             else
               echo "ERROR: Unknown mode"
               exit 1
