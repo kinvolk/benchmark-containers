@@ -47,39 +47,41 @@ fi
 # Assuming that the envsubst templates are in the same folder as this script
 P="$(dirname "$(readlink -f "$(which "$0")")")"
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
-# Warning, the one JOBNAME should not be a valid prefix for another because of globbing.
-VARS='sysbench,fileio-one,--threads=1,MiB/sec sysbench,fileio-cores,--threads=$CORES,MiB/sec sysbench,fileio-all,--threads=$CPUS,MiB/sec'
-VARS+=' sysbench,mem-one,--threads=1,MiB/sec sysbench,mem-cores,--threads=$CORES,MiB/sec sysbench,mem-all,--threads=$CPUS,MiB/sec'
-VARS+=' sysbench,cpu-one,--threads=1,Events/s sysbench,cpu-cores,--threads=$CORES,Events/s sysbench,cpu-all,--threads=$CPUS,Events/s'
+# Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
+VARS='sysbench,fileio,$ONE,MiB/sec sysbench,fileio,$CORES,MiB/sec sysbench,fileio,$CPUS,MiB/sec'
+VARS+=' sysbench,mem,$ONE,MiB/sec sysbench,mem,$CORES,MiB/sec sysbench,mem,$CPUS,MiB/sec'
+VARS+=' sysbench,cpu,$ONE,Events/s sysbench,cpu,$CORES,Events/s sysbench,cpu,$CPUS,Events/s'
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
     MODE="$JOBNAME"
     ID="$(date +%s%4N | tail -c +5)-$RANDOM"
-    echo "starting $JOBTYPE$JOBNAME$ID"
-    export JOBTYPE MODE ID PARAMETER RESULT ARCH COST META ITERATIONS
+    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
+    echo "starting $JOBTYPE$JOBNAME$PARAMETERQUOTE$ID"
+    export JOBTYPE MODE ID PARAMETER PARAMETERQUOTE RESULT ARCH COST META ITERATIONS
     # Here "export" is needed so that the envubst process can see the variables
-    cat "$P/k8s-job.envsubst" | envsubst '$JOBTYPE $MODE $ID $PARAMETER $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
+    cat "$P/k8s-job.envsubst" | envsubst '$JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
     while true; do
-      status="$(kubectl get job -n benchmark "$JOBTYPE$JOBNAME$ID" --output=jsonpath='{.status.conditions[0].type}')"
+      status="$(kubectl get job -n benchmark "$JOBTYPE$JOBNAME$PARAMETERQUOTE$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then
         break
       elif [ "$status" = Failed ]; then
         echo "ERROR: Job failed:"
-        kubectl get job -n benchmark "$JOBTYPE$JOBNAME$ID"
+        kubectl get job -n benchmark "$JOBTYPE$JOBNAME$PARAMETERQUOTE$ID"
         exit 1
       fi
       sleep 1
     done
-    echo "finished $JOBTYPE$JOBNAME"
+    echo "finished $JOBTYPE$JOBNAME$PARAMETERQUOTE"
   done
   echo "done with benchmarking"
 fi
 if [ "$(echo "$arg" | grep gather)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME" --output=jsonpath='{.items[*].metadata.name}')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
+    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl logs -n benchmark "$(kubectl get pods -n benchmark --selector=job-name="$j" --output=jsonpath='{.items[*].metadata.name}')" |  grep '^CSV:' | cut -d : -f 2- > "$j$ARCH.csv"
     done
@@ -89,17 +91,19 @@ fi
 if [ "$(echo "$arg" | grep plot)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    "$P/plot" --parameter --outfile="$JOBTYPE$JOBNAME.svg" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$P/plot" --parameter --outfile="$JOBTYPE$JOBNAME.png" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$P/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME-cost.svg" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$P/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME-cost.png" "$RESULT" "$JOBTYPE$JOBNAME"*csv
+    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
+    "$P/plot" --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
+    "$P/plot" --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
+    "$P/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
+    "$P/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
   done
   echo "done plotting"
 fi
 if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
   for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME RESULT <<< "$VAR"
-    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME" --output=jsonpath='{.items[*].metadata.name}')"
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
+    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl delete job -n benchmark "$j"
     done
