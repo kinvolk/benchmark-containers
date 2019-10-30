@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-script_dir=$(dirname "${BASH_SOURCE[0]}")
+script_dir=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 
 COMBINATIONS="benchmark+gather benchmark+gather+plot gather+plot gather+plot+cleanup benchmark+gather+cleanup benchmark+gather+plot+cleanup"
 
@@ -105,6 +105,6 @@ if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
       kubectl delete job -n benchmark "$j"
     done
   done
-  kubectl delete -f ${script_dir}/helpers.yaml
+  kubectl delete -f ${script_dir}/helpers.yaml || true
   echo "done with cleanup"
 fi
