@@ -30,9 +30,12 @@ container is fully self-sufficient and also ships release 1.5.19 of
 [memcached](https://github.com/memcached/memcached/) as well as release 5.0.6
 of [redis](https://github.com/antirez/redis/).
 Before running the benchmark, start redis and memcached:
+
 	* memcached -u benchmark -t 32
 	* su benchmark -c 'redis-server --port 7777'
+
 Then run the benchmark, e.g.
+
     * memtier_benchmark -s 127.0.0.1 -p 11211 -P memcache_binary -t 32 -n 10000 –ratio 1:1 -c 25 -x 10 -d 100 –key-pattern S:S
 
 fio container
