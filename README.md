@@ -22,6 +22,19 @@ Call `./build.sh` without arguments to build all containers in the project, or
 separately from `./build.sh` as the `perf` build currently contains a number
 of workarounds.
 
+memtier / memcached / redis container
+=====================================
+The memtier container ships release 1.2.17 of Redis'
+[memtier](https://github.com/RedisLabs/memtier_benchmark/) benchmark. The
+container is fully self-sufficient and also ships release 1.5.19 of
+[memcached](https://github.com/memcached/memcached/) as well as release 5.0.6
+of [redis](https://github.com/antirez/redis/).
+Before running the benchmark, start redis and memcached:
+	* memcached -u benchmark -t 32
+	* su benchmark -c 'redis-server --port 7777'
+Then run the benchmark, e.g.
+    * memtier_benchmark -s 127.0.0.1 -p 11211 -P memcache_binary -t 32 -n 10000 –ratio 1:1 -c 25 -x 10 -d 100 –key-pattern S:S
+
 fio container
 =============
 The FIO container ships release 3.15 of the
