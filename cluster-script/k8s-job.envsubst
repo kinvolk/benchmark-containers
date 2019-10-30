@@ -19,6 +19,10 @@ spec:
       - name: tmpfs-volume
         emptyDir:
           medium: Memory
+      - name: cpu-script
+        configMap:
+          name: cpu-script
+          defaultMode: 0777
       containers:
       - name: cont
         resources:
@@ -27,26 +31,21 @@ spec:
         volumeMounts:
           - mountPath: /tmp
             name: tmpfs-volume
+          - name: cpu-script
+            mountPath: /scripts/cpu.sh
+            subPath: cpu.sh
+        imagePullPolicy: Always
         image: quay.io/kinvolk/$JOBTYPE:latest-$ARCH
         command: ["/bin/sh", "-c"]
         args:
           - |-
             set -eu
             # Runs in busybox: the space in '$( (' is needed for a busybox syntax failure.
-            SOCKETS="$(grep '^physical id' /proc/cpuinfo | sort | uniq | wc -l)"
-            if [ "$SOCKETS" = 0 ]; then
-              SOCKETS=1
-            fi
-            CPUS="$(grep '^processor' /proc/cpuinfo | wc -l)"
-            CORES="$(grep '^core id' /proc/cpuinfo | sort | uniq | wc -l)"
-            if [ "$CORES" = 0 ]; then
-              CORES="$CPUS"
-            fi
-            # Arithmetics, here it must be '$(('
-            CORES="$((CORES*SOCKETS))"
-            # Includes a workaround for missing cpuinfo entries for Ampere on the current kernels.
-            CPU="$( (grep 'model name' /proc/cpuinfo ; (if [ "$(uname -m)" = aarch64 ] && [ "$CPUS" = 32 ]; then echo Ampere eMAG; else echo unknown ; fi)) | head -n 1 | cut -d : -f 2- | xargs)"
-            HYPERTHREADING="$( ([ -f /sys/devices/system/cpu/smt/control ] && cat /sys/devices/system/cpu/smt/control) || echo n/a)"
+            SOCKETS=$(/scripts/cpu.sh sockets)
+            CPUS=$(/scripts/cpu.sh cpus)
+            CORES=$(/scripts/cpu.sh cores)
+            CPU=$(/scripts/cpu.sh model)
+            HYPERTHREADING=$(/scripts/cpu.sh ht)
             SYSTEM="$CPU (Sockets: $SOCKETS. CPUs: $CPUS. Cores: $CORES. HT: $HYPERTHREADING)"
             # JOBTYPE, MODE, PARAMETER, PARAMETERQUOTE, RESULT, ID, ITERATIONS, COST, and META are not shell variables.
             # PARAMETER can contain references to shell variables, so it's quoted in '' in the CSV printf line.
