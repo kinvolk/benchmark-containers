@@ -6,10 +6,10 @@ metadata:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: $JOBTYPE$MODE$PARAMETERQUOTE$ID
+  name: $JOBTYPE-$MODE-$PARAMETERQUOTE-$ID
   namespace: benchmark
   labels:
-    app: $JOBTYPE$MODE$PARAMETERQUOTE
+    app: $JOBTYPE-$MODE-$PARAMETERQUOTE
 spec:
   template:
     spec:
