@@ -41,4 +41,4 @@ RUN apk add --update --no-cache pcre libevent zlib so:libstdc++.so.6 so:libgcc_s
 COPY --from=builder /memcached/ /
 COPY --from=builder /redis/ /
 COPY --from=builder /memtier/ /
-run adduser -u 1000 -D benchmark
+RUN adduser -u 1000 -D benchmark
