@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: benchmark
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: $JOBTYPE$MODE$PARAMETERQUOTE$ID
+  namespace: benchmark
+  labels:
+    app: $JOBTYPE$MODE$PARAMETERQUOTE
+spec:
+  template:
+    spec:
+      securityContext:
+        runAsUser: 1000
+      volumes:
+      - name: tmpfs-volume
+        emptyDir:
+          medium: Memory
+      - name: cpu-script
+        configMap:
+          name: cpu-script
+          defaultMode: 0777
+      containers:
+      - name: cont
+        resources:
+          requests:
+            cpu: 1
+        volumeMounts:
+          - mountPath: /tmp
+            name: tmpfs-volume
+          - name: cpu-script
+            mountPath: /scripts/cpu.sh
+            subPath: cpu.sh
+        imagePullPolicy: Always
+        image: quay.io/kinvolk/$JOBTYPE:latest-$ARCH
+        command: ["/bin/sh", "-c"]
+        args:
+          - |-
+            set -eu
+            # Runs in busybox: the space in '$( (' is needed for a busybox syntax failure.
+            SOCKETS=$(/scripts/cpu.sh sockets)
+            CPUS=$(/scripts/cpu.sh cpus)
+            CORES=$(/scripts/cpu.sh cores)
+            CPU=$(/scripts/cpu.sh model)
+            HYPERTHREADING=$(/scripts/cpu.sh ht)
+            SYSTEM="$CPU (Sockets: $SOCKETS. CPUs: $CPUS. Cores: $CORES. HT: $HYPERTHREADING)"
+            # JOBTYPE, MODE, PARAMETER, PARAMETERQUOTE, RESULT, ID, ITERATIONS, COST, and META are not shell variables.
+            # PARAMETER can contain references to shell variables, so it's quoted in '' in the CSV printf line.
+            echo "CSV:Name,Parameter,System,$RESULT,Job,Cost,Meta"
+            # Helper variable ONE to have the same style for threads=VAR.
+            ONE=1
+            if [ $JOBTYPE = sysbench ] && ([ $MODE = mem ]); then
+              for i in $(seq 1 $ITERATIONS); do
+                sysbench --threads=$PARAMETER --time=30 memory --memory-total-size=500G run | tee /dev/stderr | grep 'MiB/sec' | cut -d '(' -f 2 | cut -d ' ' -f 1 | printf 'CSV:sysbench memory,--threads=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+              done
+            elif [ $JOBTYPE = sysbench ] && ([ $MODE = cpu ]); then
+              for i in $(seq 1 $ITERATIONS); do
+                sysbench --threads=$PARAMETER --time=30 cpu run | tee /dev/stderr | grep 'events per second' | cut -d : -f 2 | xargs | printf 'CSV:sysbench cpu,--threads=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+              done
+            elif [ $JOBTYPE = sysbench ] && ([ $MODE = fileio ]); then
+              cd /tmp
+              sysbench fileio --file-test-mode=rndwr prepare
+              for i in $(seq 1 $ITERATIONS); do
+                sysbench --threads=$PARAMETER --time=30 fileio --file-test-mode=rndwr run | tee /dev/stderr | grep 'written, MiB/s' | cut -d : -f 2 | xargs | printf 'CSV:sysbench fileio --file-test-mode=rndwr,--threads=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+              done
+            elif [ $JOBTYPE = stress-ng ]; then
+              for i in $(seq 1 $ITERATIONS); do
+                stress-ng --$MODE $PARAMETER --timeout 30s --metrics-brief 2>&1 | grep $MODE | tail -n 1 | awk '{print $9}' | printf 'CSV:stress-ng $MODE,threads=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+              done
+            else
+              echo "ERROR: Unknown mode"
+              exit 1
+            fi
+      restartPolicy: Never
+  backoffLimit: 0

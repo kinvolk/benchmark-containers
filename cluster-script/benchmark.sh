@@ -17,7 +17,9 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  COST:       Stores an additional cost/hour value, e.g., 1.0"
   echo "  META:       Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
   echo "Optional env variables:"
-  echo "  ITERATIONS=1: Number of runs inside a Job"
+  echo "  ITERATIONS=1:                     Number of runs inside a Job"
+  echo "  SYSBENCH=\"fileio mem cpu\":      Space-separated list of sysbench benchmarks to run (limited to the named ones)"
+  echo "  STRESSNG=\"(default in source)\": Speace-separated list of stress-ng benchmarks to run (accepts any valid names)"
   echo
   echo "The benchmark results are stored in the cluster as long as the jobs are not cleaned-up."
   echo "The gather process exports them to local files and combines the result with any existing local files."
@@ -45,11 +47,23 @@ if [ "$arg" != "plot" ]; then
   echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\""
 fi
 
+STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
+SYSBENCH="${SYSBENCH-fileio mem cpu}"
+
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
-# Warning, the one JOBNAME should not be a valid prefix for another because of globbing.
-VARS='sysbench,fileio-one,--threads=1,MiB/sec sysbench,fileio-cores,--threads=$CORES,MiB/sec sysbench,fileio-all,--threads=$CPUS,MiB/sec'
-VARS+=' sysbench,mem-one,--threads=1,MiB/sec sysbench,mem-cores,--threads=$CORES,MiB/sec sysbench,mem-all,--threads=$CPUS,MiB/sec'
-VARS+=' sysbench,cpu-one,--threads=1,Events/s sysbench,cpu-cores,--threads=$CORES,Events/s sysbench,cpu-all,--threads=$CPUS,Events/s'
+# Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
+VARS=''
+for S in $STRESSNG; do
+  VARS+="$(printf ' stress-ng,%s,$ONE,bogo-ops/s stress-ng,%s,$CORES,bogo-ops/s stress-ng,%s,$CPUS,bogo-ops/s' "$S" "$S" "$S")"
+done
+for S in $SYSBENCH; do
+  if [ "$S" = cpu ]; then
+    COL="Events/s"
+  else
+    COL="MiB/sec"
+  fi
+  VARS+="$(printf ' sysbench,%s,$ONE,%s sysbench,%s,$CORES,%s sysbench,%s,$CPUS,%s' "$S" "$COL" "$S" "$COL" "$S" "$COL")"
+done
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   echo "Deploying helpers"
@@ -58,29 +72,31 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
     MODE="$JOBNAME"
     ID="$(date +%s%4N | tail -c +5)-$RANDOM"
-    echo "starting $JOBTYPE$JOBNAME$ID"
-    export MODE ID PARAMETER RESULT ARCH COST META ITERATIONS
+    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
+    echo "starting $JOBTYPE$JOBNAME$PARAMETERQUOTE$ID"
+    export JOBTYPE MODE ID PARAMETER PARAMETERQUOTE RESULT ARCH COST META ITERATIONS
     # Here "export" is needed so that the envubst process can see the variables
-    cat "$script_dir/$JOBTYPE.envsubst" | envsubst '$MODE $ID $PARAMETER $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
+    cat "$script_dir/k8s-job.envsubst" | envsubst '$JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
     while true; do
-      status="$(kubectl get job -n benchmark "$JOBTYPE$JOBNAME$ID" --output=jsonpath='{.status.conditions[0].type}')"
+      status="$(kubectl get job -n benchmark "$JOBTYPE$JOBNAME$PARAMETERQUOTE$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then
         break
       elif [ "$status" = Failed ]; then
         echo "ERROR: Job failed:"
-        kubectl get job -n benchmark "$JOBTYPE$JOBNAME$ID"
+        kubectl get job -n benchmark "$JOBTYPE$JOBNAME$PARAMETERQUOTE$ID"
         exit 1
       fi
       sleep 1
     done
-    echo "finished $JOBTYPE$JOBNAME"
+    echo "finished $JOBTYPE$JOBNAME$PARAMETERQUOTE"
   done
   echo "done with benchmarking"
 fi
 if [ "$(echo "$arg" | grep gather)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME" --output=jsonpath='{.items[*].metadata.name}')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
+    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl logs -n benchmark "$(kubectl get pods -n benchmark --selector=job-name="$j" --output=jsonpath='{.items[*].metadata.name}')" |  grep '^CSV:' | cut -d : -f 2- > "$j$ARCH.csv"
     done
@@ -90,17 +106,19 @@ fi
 if [ "$(echo "$arg" | grep plot)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    "$script_dir/plot" --parameter --outfile="$JOBTYPE$JOBNAME.svg" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$script_dir/plot" --parameter --outfile="$JOBTYPE$JOBNAME.png" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME-cost.svg" "$RESULT" "$JOBTYPE$JOBNAME"*csv
-    "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME-cost.png" "$RESULT" "$JOBTYPE$JOBNAME"*csv
+    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
+    "$script_dir/plot" --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
+    "$script_dir/plot" --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
+    "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
+    "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
   done
   echo "done plotting"
 fi
 if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
   for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME RESULT <<< "$VAR"
-    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME" --output=jsonpath='{.items[*].metadata.name}')"
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
+    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl delete job -n benchmark "$j"
     done

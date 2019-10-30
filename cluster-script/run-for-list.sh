@@ -9,6 +9,9 @@ if [ "$#" != 2 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "KUBECONFIG,ARCH,COST,META,ITERATIONS"
   echo "The values are used as env vars for benchmark.sh."
   echo "A final 'benchmark.sh plot' run is done if 'gather' is part of ARG."
+  echo
+  echo "The env vars SYSBENCH and STRESSNG accept a space-separated list of"
+  echo "benchmarks (currently limited for SYSBENCH but generic for STRESSNG)."
   exit 0
 fi
 FILE="$1"
