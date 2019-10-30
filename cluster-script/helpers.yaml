@@ -65,7 +65,7 @@ data:
     # Prints number of physical cores
     function get_num_cores() {
         get_ht | grep -q "off" && { get_num_cpus; return; }
-        grep '^processor' /proc/cpuinfo | wc -l
+        grep '^core id' /proc/cpuinfo | sort -k3 | uniq | wc -l
     }
     # --
 
