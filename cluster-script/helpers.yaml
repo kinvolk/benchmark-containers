@@ -79,7 +79,7 @@ data:
 
     # Prints CPU manufacturer / Model name & revision
     function get_model() {
-        lscpu | awk '/^Vendor ID:/ {$1=""; $2=""; gsub(/^ +/,""); gsub(/ +$/,""); s=s " " $0}
+        lscpu | awk '/^Vendor ID:/ {$1=""; $2=""; gsub(/^ +/,""); gsub(/ +$/,""); s=s "" $0}
                      /^Model name:/ {$1=""; $2=""; gsub(/^ +/,""); gsub(/ +$/,""); s=s " " $0}
                      END {print s}'
     }
