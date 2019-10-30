@@ -53,7 +53,7 @@ VARS+=' sysbench,cpu-one,--threads=1,Events/s sysbench,cpu-cores,--threads=$CORE
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   echo "Deploying helpers"
-  kubectl apply -f ${script_dir}/helpers.yaml
+  kubectl apply -f "${script_dir}"/helpers.yaml
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
     MODE="$JOBNAME"
@@ -105,6 +105,6 @@ if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
       kubectl delete job -n benchmark "$j"
     done
   done
-  kubectl delete -f ${script_dir}/helpers.yaml || true
+  kubectl delete -f "${script_dir}"/helpers.yaml || true
   echo "done with cleanup"
 fi
