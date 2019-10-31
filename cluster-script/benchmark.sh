@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+script_dir=$(cd $(dirname "${BASH_SOURCE[0]}"); pwd)
 
 COMBINATIONS="benchmark+gather benchmark+gather+plot gather+plot gather+plot+cleanup benchmark+gather+cleanup benchmark+gather+plot+cleanup"
 
@@ -46,11 +47,9 @@ if [ "$arg" != "plot" ]; then
   echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\""
 fi
 
-# Assuming that the envsubst templates are in the same folder as this script
-P="$(dirname "$(readlink -f "$(which "$0")")")"
-
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
 SYSBENCH="${SYSBENCH-fileio mem cpu}"
+
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
 # Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
 VARS=''
@@ -67,6 +66,8 @@ for S in $SYSBENCH; do
 done
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
+  echo "Deploying helpers"
+  kubectl apply -f "${script_dir}"/helpers.yaml
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
     MODE="$JOBNAME"
@@ -75,7 +76,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     echo "starting $JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID"
     export JOBTYPE MODE ID PARAMETER PARAMETERQUOTE RESULT ARCH COST META ITERATIONS
     # Here "export" is needed so that the envubst process can see the variables
-    cat "$P/k8s-job.envsubst" | envsubst '$JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
+    cat "$script_dir/k8s-job.envsubst" | envsubst '$JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
     while true; do
       status="$(kubectl get job -n benchmark "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then
@@ -106,10 +107,10 @@ if [ "$(echo "$arg" | grep plot)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
     PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | tr '[:upper:]' '[:lower:]')"
-    "$P/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
-    "$P/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
-    "$P/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
-    "$P/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+    "$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+    "$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+    "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+    "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
   done
   echo "done plotting"
 fi
@@ -122,5 +123,6 @@ if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
       kubectl delete job -n benchmark "$j"
     done
   done
+  kubectl delete -f "${script_dir}"/helpers.yaml || true
   echo "done with cleanup"
 fi
