@@ -36,6 +36,8 @@ MAINTAINER Kinvolk
 RUN apk add --update --no-cache py2-six
 COPY --from=dstat-builder /dstat/dstat /usr/local/bin
 COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
+# lscpu
+RUN apk add --update --no-cache util-linux
 # memcached, redis, memtier
 RUN apk add --update --no-cache pcre libevent zlib so:libstdc++.so.6 so:libgcc_s.so.1
 COPY --from=builder /memcached/ /
