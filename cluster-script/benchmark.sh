@@ -72,31 +72,31 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
     MODE="$JOBNAME"
     ID="$(date +%s%4N | tail -c +5)-$RANDOM"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
-    echo "starting $JOBTYPE$JOBNAME$PARAMETERQUOTE$ID"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | tr '[:upper:]' '[:lower:]')"
+    echo "starting $JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID"
     export JOBTYPE MODE ID PARAMETER PARAMETERQUOTE RESULT ARCH COST META ITERATIONS
     # Here "export" is needed so that the envubst process can see the variables
     cat "$script_dir/k8s-job.envsubst" | envsubst '$JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
     while true; do
-      status="$(kubectl get job -n benchmark "$JOBTYPE$JOBNAME$PARAMETERQUOTE$ID" --output=jsonpath='{.status.conditions[0].type}')"
+      status="$(kubectl get job -n benchmark "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then
         break
       elif [ "$status" = Failed ]; then
         echo "ERROR: Job failed:"
-        kubectl get job -n benchmark "$JOBTYPE$JOBNAME$PARAMETERQUOTE$ID"
+        kubectl get job -n benchmark "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID"
         exit 1
       fi
       sleep 1
     done
-    echo "finished $JOBTYPE$JOBNAME$PARAMETERQUOTE"
+    echo "finished $JOBTYPE-$JOBNAME-$PARAMETERQUOTE"
   done
   echo "done with benchmarking"
 fi
 if [ "$(echo "$arg" | grep gather)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
-    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | tr '[:upper:]' '[:lower:]')"
+    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl logs -n benchmark "$(kubectl get pods -n benchmark --selector=job-name="$j" --output=jsonpath='{.items[*].metadata.name}')" |  grep '^CSV:' | cut -d : -f 2- > "$j$ARCH.csv"
     done
@@ -106,11 +106,11 @@ fi
 if [ "$(echo "$arg" | grep plot)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
-    {   "$script_dir/plot" --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
-        "$script_dir/plot" --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
-        "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv
-        "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE$JOBNAME$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE$JOBNAME$PARAMETERQUOTE"*csv ; } &
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | tr '[:upper:]' '[:lower:]')"
+	{ 	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+    	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+    	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+    	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv ; } &
   done
   wait
   echo "done plotting"
@@ -118,8 +118,8 @@ fi
 if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | tr '$' '-' | tr '[:upper:]' '[:lower:]')"
-    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE$JOBNAME$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | tr '[:upper:]' '[:lower:]')"
+    jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl delete job -n benchmark "$j"
     done
