@@ -70,6 +70,48 @@ spec:
               for i in $(seq 1 $ITERATIONS); do
                 stress-ng --$MODE $PARAMETER --timeout 30s --metrics-brief 2>&1 | grep $MODE | tail -n 1 | awk '{print $9}' | printf 'CSV:stress-ng $MODE,threads=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
               done
+            elif [ $JOBTYPE = memtier ] && ([ $MODE = memcached ] || [ $MODE = redis ]); then
+              cd /tmp
+              PORT=7000
+              if [ $MODE = memcached ]; then
+                THREADS="$(( $PARAMETER ))"
+                BENCHMARKTHREADS="$THREADS"
+                BENCHMARKPROCESSES=1
+                TYPE=threads
+                PROTOCOL=memcache_binary
+                memcached --port "$(( PORT + 1 ))" -u "$(whoami)" -t "$THREADS" &
+              else
+                THREADS=1
+                BENCHMARKTHREADS=1
+                BENCHMARKPROCESSES="$(( $PARAMETER ))"
+                TYPE=processes
+                PROTOCOL=redis
+                for P in $(seq 1 $BENCHMARKPROCESSES); do
+                  redis-server --port "$(( PORT + P ))" &
+                done
+              fi
+              echo "Using $PARAMETER $TYPE for the database"
+              for P in $(seq 1 $BENCHMARKPROCESSES); do
+                while [ "$(wget "http://127.0.0.1:$(( PORT + P ))" 2>&1 | grep "Connection refused")" != "" ]; do
+                  sleep 1
+                  echo "Waiting for DB $P to start..."
+                done
+              done
+              echo "Using $BENCHMARKPROCESSES processes and $BENCHMARKTHREADS threads for the benchmark client"
+              for I in $(seq 1 $ITERATIONS); do
+                WAIT=""
+                for P in $(seq 1 $BENCHMARKPROCESSES); do
+                  { memtier_benchmark -p "$(( PORT + P ))" -P "$PROTOCOL" -t "$BENCHMARKTHREADS" --test-time 30 --ratio 1:1 -c 25 -x 1 --data-size-range=10240-1048576 --key-pattern S:S  2>&1 | tee /dev/stderr | grep Totals | tail -n 1 | awk '{print $2}' | cut -d . -f 1 > "$P" ; } &
+                  WAIT="$WAIT""$! "
+                done
+                wait $WAIT
+                SUM=0
+                for P in $(cat $(seq 1 $BENCHMARKPROCESSES)); do
+                  SUM="$(( SUM + P ))"
+                done
+                printf 'CSV:memtier $MODE,%s=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$TYPE" "$SYSTEM" "$SUM"
+              done
+              killall redis-server memcached || true
             else
               echo "ERROR: Unknown mode"
               exit 1
