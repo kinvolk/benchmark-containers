@@ -23,6 +23,8 @@ spec:
         configMap:
           name: cpu-script
           defaultMode: 0777
+      nodeSelector:
+        kubernetes.io/arch: $ARCH
       containers:
       - name: cont
         resources:
