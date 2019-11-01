@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: iperf3-service
+  namespace: benchmark
+spec:
+  clusterIP: None
+  selector:
+    app: iperf3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iperf3
+  namespace: benchmark
+spec:
+  selector:
+    matchLabels:
+      app: iperf3
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: iperf3
+    spec:
+      securityContext:
+        runAsUser: 1000
+      volumes:
+      - name: tmpfs-volume
+        emptyDir:
+          medium: Memory
+      - name: cpu-script
+        configMap:
+          name: cpu-script
+          defaultMode: 0777
+      nodeSelector:
+        kubernetes.io/arch: $ARCH
+        benchmark-node: network-server
+      tolerations:
+      - key: benchmark-node
+        operator: "Equal"
+        value: "network-server"
+        effect: "NoSchedule"
+      containers:
+      - name: cont
+        resources:
+          requests:
+            cpu: 1
+        volumeMounts:
+          - mountPath: /tmp
+            name: tmpfs-volume
+          - name: cpu-script
+            mountPath: /scripts/cpu.sh
+            subPath: cpu.sh
+        imagePullPolicy: Always
+        image: quay.io/kinvolk/iperf3:latest-$ARCH
+        ports:
+          - containerPort: 6000
+        command: ["/bin/sh", "-c"]
+        args:
+          - |-
+            set -eu
+            SOCKETS=$(/scripts/cpu.sh sockets)
+            CPUS=$(/scripts/cpu.sh cpus)
+            CORES=$(/scripts/cpu.sh cores)
+            CPU=$(/scripts/cpu.sh model)
+            HYPERTHREADING=$(/scripts/cpu.sh ht)
+            SYSTEM="$CPU (Sockets: $SOCKETS. CPUs: $CPUS. Cores: $CORES. HT: $HYPERTHREADING)"
+            echo "$SYSTEM"
+            iperf3 -s -p 6000

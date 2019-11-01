@@ -6,7 +6,7 @@ if [ "$#" != 2 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "Runs 'benchmark.sh ARG' for each cluster entry in FILE."
   echo "FILE contains one cluster entry per line, stored as comma-separated values"
   echo "(no whitespaces before or after comma) in the following order:"
-  echo "KUBECONFIG,ARCH,COST,META,ITERATIONS"
+  echo "KUBECONFIG,ARCH,COST,META,ITERATIONS,NETWORKNODE"
   echo "The values are used as env vars for benchmark.sh."
   echo "A final 'benchmark.sh plot' run is done if 'gather' is part of ARG."
   echo
@@ -22,8 +22,8 @@ P="$(dirname "$(readlink -f $(which "$0"))")"
 
 WAIT=""
 while IFS= read -r line || [ -n "$line" ]; do
-  IFS=, read KUBECONFIG ARCH COST META ITERATIONS <<< "$line"
-  export KUBECONFIG ARCH COST META ITERATIONS
+  IFS=, read KUBECONFIG ARCH COST META ITERATIONS NETWORKNODE <<< "$line"
+  export KUBECONFIG ARCH COST META ITERATIONS NETWORKNODE
   "$P/benchmark.sh" "$ARG" &
   WAIT+="$! "
   if [ "$ARG" = plot ]; then
