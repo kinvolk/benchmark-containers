@@ -1,7 +1,7 @@
 #!/bin/bash
 # Docker build helper to build one, or multiple, benchmark container(s)
 
-targets="fio stress-ng sysbench iperf3 memtier"
+targets="fio stress-ng sysbench iperf3 memtier nginx"
 cmdl_targets=""
 
 build_root=$(dirname "${BASH_SOURCE[0]}")
