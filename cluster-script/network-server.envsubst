@@ -1,27 +1,27 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: iperf3-service
+  name: $JOBNAME-service
   namespace: benchmark
 spec:
   clusterIP: None
   selector:
-    app: iperf3
+    app: $JOBNAME
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: iperf3
+  name: $JOBNAME
   namespace: benchmark
 spec:
   selector:
     matchLabels:
-      app: iperf3
+      app: $JOBNAME
   replicas: 1
   template:
     metadata:
       labels:
-        app: iperf3
+        app: $JOBNAME
     spec:
       securityContext:
         runAsUser: 1000
@@ -53,9 +53,9 @@ spec:
             mountPath: /scripts/cpu.sh
             subPath: cpu.sh
         imagePullPolicy: Always
-        image: quay.io/kinvolk/iperf3:latest-$ARCH
+        image: quay.io/kinvolk/$JOBNAME:latest-$ARCH
         ports:
-          - containerPort: 6000
+          - containerPort: $PORT
         command: ["/bin/sh", "-c"]
         args:
           - |-
@@ -67,4 +67,11 @@ spec:
             HYPERTHREADING=$(/scripts/cpu.sh ht)
             SYSTEM="$CPU (Sockets: $SOCKETS. CPUs: $CPUS. Cores: $CORES. HT: $HYPERTHREADING)"
             echo "$SYSTEM"
-            iperf3 -s -p 6000
+            if [ $JOBNAME = iperf3 ]; then
+              iperf3 -s -p $PORT
+            elif [ $JOBNAME = nginx ]; then
+              nginx -g "daemon off;"
+            else
+              echo "Unknown JOBNAME"
+              exit 1
+            fi
