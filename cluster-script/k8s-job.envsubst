@@ -146,9 +146,9 @@ spec:
               for i in $(seq 1 $ITERATIONS); do
                 REQ_BODY_LEN=50
                 rm out.json || true
-                fortio load $PARAMETER -t=30s -payload-size=50 -keepalive=false -labels='-payload-size=50 -keepalive=false $PARAMETER Iteration: '"$i" -json=out.json "fortio-service:$PORT"
+                fortio load $PARAMETER -payload-size=50 -keepalive=false -labels='-payload-size=50 -keepalive=false $PARAMETER Iteration: '"$i" -json=out.json "fortio-service:$PORT"
                 cat out.json > /dev/stderr
-                tac out.json | grep -m 1 Value | cut  -d ':' -f 2 | xargs | printf '\nCSV:fortio,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+                tac out.json | grep -m 1 Value | cut  -d ':' -f 2 | xargs | printf '\nCSV:fortio,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(awk "BEGIN{print "$(cat)"*1000}")"
               done
             else
               echo "ERROR: Unknown mode"

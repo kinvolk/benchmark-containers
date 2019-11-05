@@ -79,7 +79,7 @@ for S in $NETWORK; do
   elif [ "$S" = ab ]; then
     VARS+=('ab,nginx,$CORES,HTTP-Req/s' 'ab,nginx,$CPUS,HTTP-Req/s')
   elif [ "$S" = fortio ]; then
-    VARS+=('fortio,fortio,-c $CPUS -qps=2000,p999 latency sec' 'fortio,fortio,-grpc -s 10 -c $CPUS -qps=2000,p999 latency sec')
+    VARS+=('fortio,fortio,-c 20 -qps=2000 -t=60s,p999 latency ms' 'fortio,fortio,-grpc -s 10 -c 20 -qps=2000 -t=60s,p999 latency ms')
   fi
 done
 VARS+=("")
