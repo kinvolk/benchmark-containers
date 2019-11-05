@@ -36,11 +36,6 @@ spec:
       nodeSelector:
         kubernetes.io/arch: $ARCH
         benchmark-node: network-server
-      tolerations:
-      - key: benchmark-node
-        operator: "Equal"
-        value: "network-server"
-        effect: "NoSchedule"
       containers:
       - name: cont
         resources:

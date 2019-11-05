@@ -22,8 +22,8 @@ P="$(dirname "$(readlink -f $(which "$0"))")"
 
 WAIT=""
 while IFS= read -r line || [ -n "$line" ]; do
-  IFS=, read KUBECONFIG ARCH COST META ITERATIONS NETWORKNODE <<< "$line"
-  export KUBECONFIG ARCH COST META ITERATIONS NETWORKNODE
+  IFS=, read KUBECONFIG ARCH COST META ITERATIONS BENCHMARKNODE NETWORKNODE <<< "$line"
+  export KUBECONFIG ARCH COST META ITERATIONS BENCHMARKNODE NETWORKNODE
   "$P/benchmark.sh" "$ARG" &
   WAIT+="$! "
   if [ "$ARG" = plot ]; then

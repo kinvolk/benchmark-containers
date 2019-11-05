@@ -12,11 +12,12 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  cleanup:   Deletes the Kubernetes Jobs (optional cleanup)"
   echo "  (Valid combinations: $COMBINATIONS)"
   echo "Required env variables:"
-  echo "  KUBECONFIG: Specifies the cluster to use"
-  echo "  ARCH:       Specifies which container image suffix to use (either arm64 or amd64)"
-  echo "  COST:       Stores an additional cost/hour value, e.g., 1.0"
-  echo "  META:       Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
-  echo "  NETWORKNODE: Specifies the node to label as server for the network benchmarks. It should have the same hardware."
+  echo "  KUBECONFIG:    Specifies the cluster to use"
+  echo "  ARCH:          Specifies which container image suffix to use (either arm64 or amd64)"
+  echo "  COST:          Stores an additional cost/hour value, e.g., 1.0"
+  echo "  META:          Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
+  echo "  BENCHMARKNODE: Specifies the node where the benchmark work load runs on."
+  echo "  NETWORKNODE:   Specifies the node to label as second server for the network benchmarks. It should have the same hardware as BENCHMARKNODE."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
   echo "  NETWORK=\"iperf3 ab fortio\":     Space-separated list of network benchmarks to run (limited to the named ones)"
@@ -46,9 +47,9 @@ ITERATIONS="${ITERATIONS-1}"
 
 if [ "$arg" != "plot" ]; then
   # Test if required env variables are set
-  echo "$KUBECONFIG $ARCH $COST $META $NETWORKNODE" > /dev/null
+  echo "$KUBECONFIG $ARCH $COST $META $BENCHMARKNODE $NETWORKNODE" > /dev/null
   # Log them for the user for awareness
-  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" NETWORKNODE=\"$NETWORKNODE\""
+  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" BENCHMARKNODE=\"$BENCHMARKNODE\" NETWORKNODE=\"$NETWORKNODE\""
 fi
 
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
@@ -89,9 +90,9 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   kubectl apply -f "${script_dir}"/helpers.yaml
   count=0; while [ "x${VARS[count]}" != "x" ]; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
+    kubectl label --overwrite=true nodes "$BENCHMARKNODE" benchmark-node=benchmark-server
     if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
       kubectl label --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server
-      kubectl taint --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server:NoSchedule
       if [ "$JOBNAME" = nginx ]; then
         PORT=8000
       elif [ "$JOBNAME" = iperf3 ]; then
@@ -129,7 +130,6 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     done
     if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
       cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT' | kubectl delete -f -
-      kubectl taint nodes "$NETWORKNODE" benchmark-node:NoSchedule-
     fi
     echo "finished $JOBTYPE-$JOBNAME-$PARAMETERQUOTE"
   count=$(( $count + 1 ))
