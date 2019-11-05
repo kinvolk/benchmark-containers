@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: $JOBNAME-service
+  namespace: benchmark
+spec:
+  clusterIP: None
+  selector:
+    app: $JOBNAME
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $JOBNAME
+  namespace: benchmark
+spec:
+  selector:
+    matchLabels:
+      app: $JOBNAME
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: $JOBNAME
+    spec:
+      securityContext:
+        runAsUser: 1000
+      volumes:
+      - name: tmpfs-volume
+        emptyDir:
+          medium: Memory
+      - name: cpu-script
+        configMap:
+          name: cpu-script
+          defaultMode: 0777
+      nodeSelector:
+        kubernetes.io/arch: $ARCH
+        benchmark-node: network-server
+      tolerations:
+      - key: benchmark-node
+        operator: "Equal"
+        value: "network-server"
+        effect: "NoSchedule"
+      containers:
+      - name: cont
+        resources:
+          requests:
+            cpu: 1
+        volumeMounts:
+          - mountPath: /tmp
+            name: tmpfs-volume
+          - name: cpu-script
+            mountPath: /scripts/cpu.sh
+            subPath: cpu.sh
+        imagePullPolicy: Always
+        image: quay.io/kinvolk/$JOBNAME:latest-$ARCH
+        ports:
+          - containerPort: $PORT
+        command: ["/bin/sh", "-c"]
+        args:
+          - |-
+            set -eu
+            SOCKETS=$(/scripts/cpu.sh sockets)
+            CPUS=$(/scripts/cpu.sh cpus)
+            CORES=$(/scripts/cpu.sh cores)
+            CPU=$(/scripts/cpu.sh model)
+            HYPERTHREADING=$(/scripts/cpu.sh ht)
+            SYSTEM="$CPU (Sockets: $SOCKETS. CPUs: $CPUS. Cores: $CORES. HT: $HYPERTHREADING)"
+            echo "$SYSTEM"
+            if [ $JOBNAME = iperf3 ]; then
+              iperf3 -s -p $PORT
+            elif [ $JOBNAME = nginx ]; then
+              nginx -g "daemon off;"
+            else
+              echo "Unknown JOBNAME"
+              exit 1
+            fi

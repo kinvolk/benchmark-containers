@@ -16,8 +16,10 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  ARCH:       Specifies which container image suffix to use (either arm64 or amd64)"
   echo "  COST:       Stores an additional cost/hour value, e.g., 1.0"
   echo "  META:       Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
+  echo "  NETWORKNODE: Specifies the node to label as server for the network benchmarks. It should have the same hardware."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
+  echo "  NETWORK=\"iperf3 ab\":            Space-separated list of network benchmarks to run (limited to the named ones)"
   echo "  MEMTIER=\"memcached redis\":      Space-separated list of memtier benchmarks to run (limited to the named ones)"
   echo "  SYSBENCH=\"fileio mem cpu\":      Space-separated list of sysbench benchmarks to run (limited to the named ones)"
   echo "  STRESSNG=\"(default in source)\": Space-separated list of stress-ng benchmarks to run (accepts any valid names)"
@@ -44,14 +46,15 @@ ITERATIONS="${ITERATIONS-1}"
 
 if [ "$arg" != "plot" ]; then
   # Test if required env variables are set
-  echo "$KUBECONFIG $ARCH $COST $META" > /dev/null
+  echo "$KUBECONFIG $ARCH $COST $META $NETWORKNODE" > /dev/null
   # Log them for the user for awareness
-  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\""
+  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" NETWORKNODE=\"$NETWORKNODE\""
 fi
 
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
 SYSBENCH="${SYSBENCH-fileio mem cpu}"
 MEMTIER="${MEMTIER-memcached redis}"
+NETWORK="${NETWORK-iperf3 ab}"
 
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
 # Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
@@ -70,12 +73,30 @@ for S in $SYSBENCH; do
   fi
   VARS+="$(printf ' sysbench,%s,$ONE,%s sysbench,%s,$CORES,%s sysbench,%s,$CPUS,%s' "$S" "$COL" "$S" "$COL" "$S" "$COL")"
 done
+for S in $NETWORK; do
+  if [ "$S" = iperf3 ]; then
+    VARS+=' iperf3,iperf3,$ONE,MBit/s iperf3,iperf3,$CORES,MBit/s iperf3,iperf3,$CPUS,MBit/s'
+  elif [ "$S" = ab ]; then
+    VARS+=' ab,nginx,$CORES,HTTP-Req/s ab,nginx,$CPUS,HTTP-Req/s'
+  fi
+done
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   echo "Deploying helpers"
   kubectl apply -f "${script_dir}"/helpers.yaml
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
+    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ]; then
+      kubectl label --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server
+      kubectl taint --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server:NoSchedule
+      if [ "$JOBNAME" = nginx ]; then
+        PORT=8000
+      else
+        PORT=6000
+      fi
+      export JOBNAME PORT
+      cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT' | kubectl apply -f -
+    fi
     MODE="$JOBNAME"
     ID="$(date +%s%4N | tail -c +5)-$RANDOM"
     PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
@@ -94,6 +115,10 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
       fi
       sleep 1
     done
+    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ]; then
+      cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT' | kubectl delete -f -
+      kubectl taint nodes "$NETWORKNODE" benchmark-node:NoSchedule-
+    fi
     echo "finished $JOBTYPE-$JOBNAME-$PARAMETERQUOTE"
   done
   echo "done with benchmarking"
