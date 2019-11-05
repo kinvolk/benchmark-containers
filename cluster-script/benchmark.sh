@@ -19,7 +19,7 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  NETWORKNODE: Specifies the node to label as server for the network benchmarks. It should have the same hardware."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
-  echo "  NETWORK=\"iperf3 ab\":            Space-separated list of network benchmarks to run (limited to the named ones)"
+  echo "  NETWORK=\"iperf3 ab fortio\":     Space-separated list of network benchmarks to run (limited to the named ones)"
   echo "  MEMTIER=\"memcached redis\":      Space-separated list of memtier benchmarks to run (limited to the named ones)"
   echo "  SYSBENCH=\"fileio mem cpu\":      Space-separated list of sysbench benchmarks to run (limited to the named ones)"
   echo "  STRESSNG=\"(default in source)\": Space-separated list of stress-ng benchmarks to run (accepts any valid names)"
@@ -54,7 +54,7 @@ fi
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
 SYSBENCH="${SYSBENCH-fileio mem cpu}"
 MEMTIER="${MEMTIER-memcached redis}"
-NETWORK="${NETWORK-iperf3 ab}"
+NETWORK="${NETWORK-iperf3 ab fortio}"
 
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
 # Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
@@ -78,6 +78,8 @@ for S in $NETWORK; do
     VARS+=' iperf3,iperf3,$ONE,MBit/s iperf3,iperf3,$CORES,MBit/s iperf3,iperf3,$CPUS,MBit/s'
   elif [ "$S" = ab ]; then
     VARS+=' ab,nginx,$CORES,HTTP-Req/s ab,nginx,$CPUS,HTTP-Req/s'
+  elif [ "$S" = fortio ]; then
+    VARS+=('fortio,fortio,-c $CPUS -qps=2000,p999 latency sec' 'fortio,fortio,-grpc -s 10 -c $CPUS -qps=2000,p999 latency sec')
   fi
 done
 
@@ -86,13 +88,22 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   kubectl apply -f "${script_dir}"/helpers.yaml
   for VAR in $VARS; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ]; then
+    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
       kubectl label --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server
       kubectl taint --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server:NoSchedule
       if [ "$JOBNAME" = nginx ]; then
         PORT=8000
-      else
+      elif [ "$JOBNAME" = iperf3 ]; then
         PORT=6000
+      elif [ "$JOBNAME" = fortio ]; then
+        if echo "$PARAMETER" | grep grpc > /dev/null; then
+          PORT=8079
+        else
+          PORT=8080
+        fi
+      else
+        echo "Unknown JOBNAME"
+        exit 1
       fi
       export JOBNAME PORT
       cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT' | kubectl apply -f -
@@ -115,7 +126,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
       fi
       sleep 1
     done
-    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ]; then
+    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
       cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT' | kubectl delete -f -
       kubectl taint nodes "$NETWORKNODE" benchmark-node:NoSchedule-
     fi

@@ -71,6 +71,8 @@ spec:
               iperf3 -s -p $PORT
             elif [ $JOBNAME = nginx ]; then
               nginx -g "daemon off;"
+            elif [ $JOBNAME = fortio ]; then
+              fortio server -ui-path ''
             else
               echo "Unknown JOBNAME"
               exit 1
