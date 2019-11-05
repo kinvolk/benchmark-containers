@@ -58,12 +58,12 @@ NETWORK="${NETWORK-iperf3 ab fortio}"
 
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
 # Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
-VARS=''
+VARS=()
 for S in $MEMTIER; do
-  VARS+="$(printf ' memtier,%s,$ONE,Total-Ops/sec memtier,%s,$CORES/2,Total-Ops/sec memtier,%s,$CPUS/2,Total-Ops/sec' "$S" "$S" "$S")"
+  VARS+=("$(printf 'memtier,%s,$ONE,Total-Ops/sec' "$S")" "$(printf 'memtier,%s,$CORES/2,Total-Ops/sec' "$S")" "$(printf 'memtier,%s,$CPUS/2,Total-Ops/sec' "$S")")
 done
 for S in $STRESSNG; do
-  VARS+="$(printf ' stress-ng,%s,$ONE,bogo-ops/s stress-ng,%s,$CORES,bogo-ops/s stress-ng,%s,$CPUS,bogo-ops/s' "$S" "$S" "$S")"
+  VARS+=("$(printf 'stress-ng,%s,$ONE,bogo-ops/s' "$S")" "$(printf 'stress-ng,%s,$CORES,bogo-ops/s' "$S")" "$(printf 'stress-ng,%s,$CPUS,bogo-ops/s' "$S")")
 done
 for S in $SYSBENCH; do
   if [ "$S" = cpu ]; then
@@ -71,23 +71,24 @@ for S in $SYSBENCH; do
   else
     COL="MiB/sec"
   fi
-  VARS+="$(printf ' sysbench,%s,$ONE,%s sysbench,%s,$CORES,%s sysbench,%s,$CPUS,%s' "$S" "$COL" "$S" "$COL" "$S" "$COL")"
+  VARS+=("$(printf 'sysbench,%s,$ONE,%s' "$S" "$COL")" "$(printf 'sysbench,%s,$CORES,%s' "$S" "$COL")" "$(printf 'sysbench,%s,$CPUS,%s' "$S" "$COL")")
 done
 for S in $NETWORK; do
   if [ "$S" = iperf3 ]; then
-    VARS+=' iperf3,iperf3,$ONE,MBit/s iperf3,iperf3,$CORES,MBit/s iperf3,iperf3,$CPUS,MBit/s'
+    VARS+=('iperf3,iperf3,$ONE,MBit/s' 'iperf3,iperf3,$CORES,MBit/s' 'iperf3,iperf3,$CPUS,MBit/s')
   elif [ "$S" = ab ]; then
-    VARS+=' ab,nginx,$CORES,HTTP-Req/s ab,nginx,$CPUS,HTTP-Req/s'
+    VARS+=('ab,nginx,$CORES,HTTP-Req/s' 'ab,nginx,$CPUS,HTTP-Req/s')
   elif [ "$S" = fortio ]; then
     VARS+=('fortio,fortio,-c $CPUS -qps=2000,p999 latency sec' 'fortio,fortio,-grpc -s 10 -c $CPUS -qps=2000,p999 latency sec')
   fi
 done
+VARS+=("")
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   echo "Deploying helpers"
   kubectl apply -f "${script_dir}"/helpers.yaml
-  for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
+  count=0; while [ "x${VARS[count]}" != "x" ]; do
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
     if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
       kubectl label --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server
       kubectl taint --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server:NoSchedule
@@ -110,7 +111,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     fi
     MODE="$JOBNAME"
     ID="$(date +%s%4N | tail -c +5)-$RANDOM"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     echo "starting $JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID"
     export JOBTYPE MODE ID PARAMETER PARAMETERQUOTE RESULT ARCH COST META ITERATIONS
     # Here "export" is needed so that the envubst process can see the variables
@@ -131,40 +132,44 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
       kubectl taint nodes "$NETWORKNODE" benchmark-node:NoSchedule-
     fi
     echo "finished $JOBTYPE-$JOBNAME-$PARAMETERQUOTE"
+  count=$(( $count + 1 ))
   done
   echo "done with benchmarking"
 fi
 if [ "$(echo "$arg" | grep gather)" != "" ]; then
-  for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
+  count=0; while [ "x${VARS[count]}" != "x" ]; do
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl logs -n benchmark "$(kubectl get pods -n benchmark --selector=job-name="$j" --output=jsonpath='{.items[*].metadata.name}')" |  grep '^CSV:' | cut -d : -f 2- > "$j$ARCH.csv"
     done
+  count=$(( $count + 1 ))
   done
   echo "done gathering"
 fi
 if [ "$(echo "$arg" | grep plot)" != "" ]; then
-  for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
+  count=0; while [ "x${VARS[count]}" != "x" ]; do
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
 	{ 	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv ; } &
+  count=$(( $count + 1 ))
   done
   wait
   echo "done plotting"
 fi
 if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
-  for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
+  count=0; while [ "x${VARS[count]}" != "x" ]; do
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl delete job -n benchmark "$j"
     done
+  count=$(( $count + 1 ))
   done
   kubectl delete -f "${script_dir}"/helpers.yaml || true
   echo "done with cleanup"
