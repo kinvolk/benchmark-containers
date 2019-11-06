@@ -12,14 +12,16 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  cleanup:   Deletes the Kubernetes Jobs (optional cleanup)"
   echo "  (Valid combinations: $COMBINATIONS)"
   echo "Required env variables:"
-  echo "  KUBECONFIG: Specifies the cluster to use"
-  echo "  ARCH:       Specifies which container image suffix to use (either arm64 or amd64)"
-  echo "  COST:       Stores an additional cost/hour value, e.g., 1.0"
-  echo "  META:       Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
-  echo "  NETWORKNODE: Specifies the node to label as server for the network benchmarks. It should have the same hardware."
+  echo "  KUBECONFIG:    Specifies the cluster to use"
+  echo "  ARCH:          Specifies which container image suffix to use (either arm64 or amd64)"
+  echo "  COST:          Stores an additional cost/hour value, e.g., 1.0"
+  echo "  META:          Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
+  echo "  BENCHMARKNODE: Specifies the node where the benchmark work load runs on."
+  echo "  NETWORKNODE:   Specifies the node to label as second server for the network benchmarks. It should have the same hardware as BENCHMARKNODE."
+  echo "  FIXEDX86NODE:  Specifies the node which is used as client to measure latencies. It should be the same x86 hardware for all clusters (Can be NETWORKNODE if they have the same type)."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
-  echo "  NETWORK=\"iperf3 ab\":            Space-separated list of network benchmarks to run (limited to the named ones)"
+  echo "  NETWORK=\"iperf3 ab fortio\":     Space-separated list of network benchmarks to run (limited to the named ones)"
   echo "  MEMTIER=\"memcached redis\":      Space-separated list of memtier benchmarks to run (limited to the named ones)"
   echo "  SYSBENCH=\"fileio mem cpu\":      Space-separated list of sysbench benchmarks to run (limited to the named ones)"
   echo "  STRESSNG=\"(default in source)\": Space-separated list of stress-ng benchmarks to run (accepts any valid names)"
@@ -46,24 +48,24 @@ ITERATIONS="${ITERATIONS-1}"
 
 if [ "$arg" != "plot" ]; then
   # Test if required env variables are set
-  echo "$KUBECONFIG $ARCH $COST $META $NETWORKNODE" > /dev/null
+  echo "$KUBECONFIG $ARCH $COST $META $BENCHMARKNODE $NETWORKNODE $FIXEDX86NODE" > /dev/null
   # Log them for the user for awareness
-  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" NETWORKNODE=\"$NETWORKNODE\""
+  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" BENCHMARKNODE=\"$BENCHMARKNODE\" NETWORKNODE=\"$NETWORKNODE\" FIXEDX86NODE=\"$FIXEDX86NODE\""
 fi
 
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
 SYSBENCH="${SYSBENCH-fileio mem cpu}"
 MEMTIER="${MEMTIER-memcached redis}"
-NETWORK="${NETWORK-iperf3 ab}"
+NETWORK="${NETWORK-iperf3 ab fortio}"
 
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
 # Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
-VARS=''
+VARS=()
 for S in $MEMTIER; do
-  VARS+="$(printf ' memtier,%s,$ONE,Total-Ops/sec memtier,%s,$CORES/2,Total-Ops/sec memtier,%s,$CPUS/2,Total-Ops/sec' "$S" "$S" "$S")"
+  VARS+=("$(printf 'memtier,%s,$ONE,Total-Ops/sec' "$S")" "$(printf 'memtier,%s,$CORES/2,Total-Ops/sec' "$S")" "$(printf 'memtier,%s,$CPUS/2,Total-Ops/sec' "$S")")
 done
 for S in $STRESSNG; do
-  VARS+="$(printf ' stress-ng,%s,$ONE,bogo-ops/s stress-ng,%s,$CORES,bogo-ops/s stress-ng,%s,$CPUS,bogo-ops/s' "$S" "$S" "$S")"
+  VARS+=("$(printf 'stress-ng,%s,$ONE,bogo-ops/s' "$S")" "$(printf 'stress-ng,%s,$CORES,bogo-ops/s' "$S")" "$(printf 'stress-ng,%s,$CPUS,bogo-ops/s' "$S")")
 done
 for S in $SYSBENCH; do
   if [ "$S" = cpu ]; then
@@ -71,39 +73,65 @@ for S in $SYSBENCH; do
   else
     COL="MiB/sec"
   fi
-  VARS+="$(printf ' sysbench,%s,$ONE,%s sysbench,%s,$CORES,%s sysbench,%s,$CPUS,%s' "$S" "$COL" "$S" "$COL" "$S" "$COL")"
+  VARS+=("$(printf 'sysbench,%s,$ONE,%s' "$S" "$COL")" "$(printf 'sysbench,%s,$CORES,%s' "$S" "$COL")" "$(printf 'sysbench,%s,$CPUS,%s' "$S" "$COL")")
 done
 for S in $NETWORK; do
   if [ "$S" = iperf3 ]; then
-    VARS+=' iperf3,iperf3,$ONE,MBit/s iperf3,iperf3,$CORES,MBit/s iperf3,iperf3,$CPUS,MBit/s'
+    VARS+=('iperf3,iperf3,$ONE,MBit/s' 'iperf3,iperf3,$CORES,MBit/s' 'iperf3,iperf3,$CPUS,MBit/s')
   elif [ "$S" = ab ]; then
-    VARS+=' ab,nginx,$CORES,HTTP-Req/s ab,nginx,$CPUS,HTTP-Req/s'
+    VARS+=('ab,nginx,$CORES,HTTP-Req/s' 'ab,nginx,$CPUS,HTTP-Req/s')
+  elif [ "$S" = fortio ]; then
+    VARS+=('fortio,fortio,-c 20 -qps=2000 -t=60s,p999 latency ms' 'fortio,fortio,-grpc -s 10 -c 20 -qps=2000 -t=60s,p999 latency ms')
   fi
 done
+VARS+=("")
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   echo "Deploying helpers"
   kubectl apply -f "${script_dir}"/helpers.yaml
-  for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ]; then
+  count=0; while [ "x${VARS[count]}" != "x" ]; do
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
+    kubectl label --overwrite=true nodes "$BENCHMARKNODE" benchmark-node=benchmark-server
+    BENCHNODESELECTOR=benchmark-server
+    BENCHARCH="$ARCH"
+    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
       kubectl label --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server
-      kubectl taint --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server:NoSchedule
+      NETNODESELECTOR=network-server
+      if [ "$JOBTYPE" = fortio ]; then
+        # Run the server on the BENCHMARKNODE and not on the NETWORKNODE
+        # (allows to set NETWORKNODE=FIXEDX86NODE when they are the same type, because the label is overwritten)
+        NETNODESELECTOR=benchmark-server
+        kubectl label --overwrite=true nodes "$FIXEDX86NODE" benchmark-node=fixed-x86-server
+        BENCHNODESELECTOR=fixed-x86-server
+        BENCHARCH=amd64
+      fi
       if [ "$JOBNAME" = nginx ]; then
         PORT=8000
-      else
+      elif [ "$JOBNAME" = iperf3 ]; then
         PORT=6000
+      elif [ "$JOBNAME" = fortio ]; then
+        if echo "$PARAMETER" | grep grpc > /dev/null; then
+          PORT=8079
+        else
+          PORT=8080
+        fi
+      else
+        echo "Unknown JOBNAME"
+        exit 1
       fi
-      export JOBNAME PORT
-      cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT' | kubectl apply -f -
+      export JOBNAME PORT NETNODESELECTOR
+      cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT $NETNODESELECTOR' | kubectl apply -f -
     fi
     MODE="$JOBNAME"
     ID="$(date +%s%4N | tail -c +5)-$RANDOM"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     echo "starting $JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID"
-    export JOBTYPE MODE ID PARAMETER PARAMETERQUOTE RESULT ARCH COST META ITERATIONS
+    PREVARCH="$ARCH"
+    ARCH="$BENCHARCH"
+    export BENCHNODESELECTOR JOBTYPE MODE ID PARAMETER PARAMETERQUOTE RESULT ARCH COST META ITERATIONS
     # Here "export" is needed so that the envubst process can see the variables
-    cat "$script_dir/k8s-job.envsubst" | envsubst '$JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
+    cat "$script_dir/k8s-job.envsubst" | envsubst '$BENCHNODESELECTOR $JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
+    ARCH="$PREVARCH"
     while true; do
       status="$(kubectl get job -n benchmark "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then
@@ -115,45 +143,48 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
       fi
       sleep 1
     done
-    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ]; then
-      cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT' | kubectl delete -f -
-      kubectl taint nodes "$NETWORKNODE" benchmark-node:NoSchedule-
+    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
+      cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT $NETNODESELECTOR' | kubectl delete -f -
     fi
     echo "finished $JOBTYPE-$JOBNAME-$PARAMETERQUOTE"
+  count=$(( $count + 1 ))
   done
   echo "done with benchmarking"
 fi
 if [ "$(echo "$arg" | grep gather)" != "" ]; then
-  for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
+  count=0; while [ "x${VARS[count]}" != "x" ]; do
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
-      kubectl logs -n benchmark "$(kubectl get pods -n benchmark --selector=job-name="$j" --output=jsonpath='{.items[*].metadata.name}')" |  grep '^CSV:' | cut -d : -f 2- > "$j$ARCH.csv"
+      kubectl logs -n benchmark "$(kubectl get pods -n benchmark --selector=job-name="$j" --output=jsonpath='{.items[*].metadata.name}')" |  grep --binary-files=text '^CSV:' | cut -d : -f 2- > "$j$ARCH.csv"
     done
+  count=$(( $count + 1 ))
   done
   echo "done gathering"
 fi
 if [ "$(echo "$arg" | grep plot)" != "" ]; then
-  for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
+  count=0; while [ "x${VARS[count]}" != "x" ]; do
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
 	{ 	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv ; } &
+  count=$(( $count + 1 ))
   done
   wait
   echo "done plotting"
 fi
 if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
-  for VAR in $VARS; do
-    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "$VAR"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | tr '[:upper:]' '[:lower:]')"
+  count=0; while [ "x${VARS[count]}" != "x" ]; do
+    IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl delete job -n benchmark "$j"
     done
+  count=$(( $count + 1 ))
   done
   kubectl delete -f "${script_dir}"/helpers.yaml || true
   echo "done with cleanup"

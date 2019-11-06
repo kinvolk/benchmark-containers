@@ -25,6 +25,7 @@ spec:
           defaultMode: 0777
       nodeSelector:
         kubernetes.io/arch: $ARCH
+        benchmark-node: $BENCHNODESELECTOR
       containers:
       - name: cont
         resources:
@@ -131,6 +132,28 @@ spec:
               done
               for i in $(seq 1 $ITERATIONS); do
                 ab -c $PARAMETER -t 30 -n 999999999 http://nginx-service:8000/ 2>&1 | tee /dev/stderr | grep 'Requests per second' | awk '{print $4}' | printf '\nCSV:ab $MODE,connections=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+              done
+            elif [ $JOBTYPE = fortio ] && [ $MODE = fortio ]; then
+              cd /tmp
+              if echo "$PARAMETER" | grep grpc > /dev/null; then
+                PORT=8079
+              else
+                PORT=8080
+              fi
+              while ! echo | nc fortio-service "$PORT"; do
+                echo "Waiting for fortio-service..."
+                sleep 1
+              done
+              while ! echo | nc fortio-service 9999 > /tmp/system-out; do
+                sleep 1
+              done
+              SYSTEM="$(cat /tmp/system-out)"
+              for i in $(seq 1 $ITERATIONS); do
+                REQ_BODY_LEN=50
+                rm out.json || true
+                fortio load $PARAMETER -payload-size=50 -keepalive=false -labels='-payload-size=50 -keepalive=false $PARAMETER Iteration: '"$i" -json=out.json "fortio-service:$PORT"
+                cat out.json > /dev/stderr
+                tac out.json | grep -m 1 Value | cut  -d ':' -f 2 | xargs | printf '\nCSV:fortio,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(awk "BEGIN{print "$(cat)"*1000}")"
               done
             else
               echo "ERROR: Unknown mode"
