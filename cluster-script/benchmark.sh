@@ -20,12 +20,12 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  FIXEDX86NODE:  Specifies the node used as client to for network benchmarks. It should be the same x86 hardware for all clusters."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
-  echo "  NETWORK=\"iperf3 ab fortio\":     Space-separated list of network benchmarks to run (limited to the named ones)"
-  echo "  MEMTIER=\"memcached redis\":      Space-separated list of memtier benchmarks to run (limited to the named ones)"
-  echo "  SYSBENCH=\"fileio mem cpu\":      Space-separated list of sysbench benchmarks to run (limited to the named ones)"
-  echo "  STRESSNG=\"(default in source)\": Space-separated list of stress-ng benchmarks to run (accepts any valid names)"
-  echo "                                  To disable sysbench or stress-ng benchmarks set them to a whitespace string but not"
-  echo "                                  an empty string. E.g., STRESSNG=\" \" SYSBENCH=\" \" disables both."
+  echo "  NETWORK=\"iperf3 ab fortio wrk2\": Space-separated list of network benchmarks to run (limited to the named ones)"
+  echo "  MEMTIER=\"memcached redis\":       Space-separated list of memtier benchmarks to run (limited to the named ones)"
+  echo "  SYSBENCH=\"fileio mem cpu\":       Space-separated list of sysbench benchmarks to run (limited to the named ones)"
+  echo "  STRESSNG=\"(default in source)\":  Space-separated list of stress-ng benchmarks to run (accepts any valid names)"
+  echo "                                   To disable sysbench or stress-ng benchmarks set them to a whitespace string but not"
+  echo "                                   an empty string. E.g., STRESSNG=\" \" SYSBENCH=\" \" disables both."
   echo "The benchmark results are stored in the cluster as long as the jobs are not cleaned-up."
   echo "The gather process exports them to local files and combines the result with any existing local files."
   echo "Therefore, the intended usage is to gather the results for various clusters into one directory."
@@ -82,6 +82,8 @@ for S in $NETWORK; do
     VARS+=('ab,nginx,56,HTTP-Req/s')
   elif [ "$S" = fortio ]; then
     VARS+=('fortio,fortio,-c 20 -qps=2000 -t=60s,p999 latency ms' 'fortio,fortio,-grpc -s 10 -c 20 -qps=2000 -t=60s,p999 latency ms')
+  elif [ "$S" = wrk2 ]; then
+    VARS+=('wrk2-benchmark,nginx,-d 60s -c 56 -t 56 -R 2000,p999 latency ms')
   fi
 done
 VARS+=("")
@@ -93,7 +95,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
     BENCHNODESELECTOR="$BENCHMARKNODE"
     BENCHARCH="$ARCH"
-    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
+    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ] || [ "$JOBTYPE" = wrk2-benchmark ]; then
       # Run the benchmark client on the FIXEDX86NODE and the server on the BENCHMARKNODE
       BENCHNODESELECTOR="$FIXEDX86NODE"
       BENCHARCH=amd64
@@ -137,7 +139,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
       fi
       sleep 1
     done
-    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
+    if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ] || [ "$JOBTYPE" = wrk2-benchmark ]; then
       cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT $NETNODESELECTOR' | kubectl delete -f -
     fi
     echo "finished $JOBTYPE-$JOBNAME-$PARAMETERQUOTE"
