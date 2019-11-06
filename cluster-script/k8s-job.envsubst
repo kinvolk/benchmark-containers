@@ -25,7 +25,7 @@ spec:
           defaultMode: 0777
       nodeSelector:
         kubernetes.io/arch: $ARCH
-        benchmark-node: benchmark-server
+        benchmark-node: $BENCHNODESELECTOR
       containers:
       - name: cont
         resources:
@@ -144,6 +144,10 @@ spec:
                 echo "Waiting for fortio-service..."
                 sleep 1
               done
+              while ! echo | nc fortio-service 9999 > /tmp/system-out; do
+                sleep 1
+              done
+              SYSTEM="$(cat /tmp/system-out)"
               for i in $(seq 1 $ITERATIONS); do
                 REQ_BODY_LEN=50
                 rm out.json || true
