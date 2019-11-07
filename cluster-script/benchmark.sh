@@ -140,7 +140,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
       sleep 1
     done
     if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ] || [ "$JOBTYPE" = wrk2-benchmark ]; then
-      cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT $NETNODESELECTOR' | kubectl delete -f -
+      cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT $NETNODESELECTOR' | kubectl delete --now=true -f -
     fi
     echo "finished $JOBTYPE-$JOBNAME-$PARAMETERQUOTE"
   count=$(( $count + 1 ))
@@ -178,10 +178,10 @@ if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
     PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//g' | sed -e 's/\///g' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
-      kubectl delete job -n benchmark "$j"
+      kubectl delete --now=true job -n benchmark "$j"
     done
   count=$(( $count + 1 ))
   done
-  kubectl delete -f "${script_dir}"/helpers.yaml || true
+  kubectl delete --now=true -f "${script_dir}"/helpers.yaml || true
   echo "done with cleanup"
 fi
