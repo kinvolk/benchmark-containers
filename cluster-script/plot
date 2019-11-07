@@ -5,7 +5,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import argparse
 
-parser = argparse.ArgumentParser(description="Plot two CSV results for comparison.")
+parser = argparse.ArgumentParser(description="Plot CSV results for comparison.")
 parser.add_argument("--parameter", dest="parameter", action="store_true", help="Include parameter in description")
 parser.add_argument("--outfile", type=str, help="Name of the SVG output file")
 parser.add_argument("--cost", dest="cost", action="store_true", help="Plot perf/cost")

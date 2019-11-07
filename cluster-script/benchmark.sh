@@ -165,8 +165,10 @@ if [ "$(echo "$arg" | grep plot)" != "" ]; then
     PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//g' | sed -e 's/\///g' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
 	{ 	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
-    	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
-    	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv ; } &
+        if [ "$JOBTYPE" != wrk2-benchmark ] && [ "$JOBTYPE" != fortio ] ; then
+          "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+          "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+        fi ; } &
   count=$(( $count + 1 ))
   done
   wait
