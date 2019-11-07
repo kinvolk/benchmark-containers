@@ -79,9 +79,16 @@ data:
 
     # Prints CPU manufacturer / Model name & revision
     function get_model() {
-        lscpu | awk '/^Vendor ID:/ {$1=""; $2=""; gsub(/^ +/,""); gsub(/ +$/,""); s=s "" $0}
-                     /^Model name:/ {$1=""; $2=""; gsub(/^ +/,""); gsub(/ +$/,""); s=s " " $0}
-                     END {print s}'
+        lscpu | awk '/^Vendor ID:/  { $1=""; $2="";
+                                        gsub(/^ +/,"" );
+                                        gsub(/ +$/,"");
+                                        s=$0 }
+                     /^Model name:/ { $1=""; $2="";
+                                        gsub(/^ +/,"");
+                                        gsub(/ +$/,"");
+                                        s=s " " $0 }
+                         END { if (s == "APM X-Gene") s="Ampere eMAG";
+                                        print s }'
     }
     # --
 
