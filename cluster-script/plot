@@ -27,13 +27,16 @@ if args.cost:
   results = costs
 ts = d[types].unique()
 
-df = pd.DataFrame({types: ts, results: [d[d[types]==t][results].mean() for t in ts], 'std': [d[d[types]==t][results].std() for t in ts]})
+df = pd.DataFrame({types: ts, results: [d[d[types]==t][results].mean() for t in ts]})
+distances_to_mins = [d[d[types]==t][results].mean()-d[d[types]==t][results].min() for t in ts]
+distances_to_maxs = [d[d[types]==t][results].max()-d[d[types]==t][results].mean() for t in ts]
+minmax = [[distances_to_mins, distances_to_maxs]]
 
 fontsize = 18
 plt.rc('legend', fontsize=fontsize)  # see https://stackoverflow.com/a/39566040 for more options
 plt.rc('font', size=fontsize)
 plt.rc('axes', labelsize=fontsize)
-p=df.plot(kind='barh', x=types, y=results, xerr='std', title=title, figsize=(15, 8), fontsize=fontsize)
+p=df.plot(kind='barh', x=types, y=results, xerr=minmax, title=title, figsize=(15, 8), fontsize=fontsize)
 
 plt.tight_layout()
 plt.savefig(args.outfile)
