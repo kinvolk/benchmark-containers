@@ -74,11 +74,12 @@ for S in $SYSBENCH; do
   fi
   VARS+=("$(printf 'sysbench,%s,$ONE,%s' "$S" "$COL")" "$(printf 'sysbench,%s,$CORES,%s' "$S" "$COL")" "$(printf 'sysbench,%s,$CPUS,%s' "$S" "$COL")")
 done
+# Do not use CPUS and CORES here which now refer to the fixed x86 system (which may be correct but rather use fixed numbers here to avoid confusion)
 for S in $NETWORK; do
   if [ "$S" = iperf3 ]; then
-    VARS+=('iperf3,iperf3,$ONE,MBit/s' 'iperf3,iperf3,$CORES,MBit/s' 'iperf3,iperf3,$CPUS,MBit/s')
+    VARS+=('iperf3,iperf3,-P 1 -R,MBit/s' 'iperf3,iperf3,-P 28 -R,MBit/s' 'iperf3,iperf3,-P 56 -R,MBit/s')
   elif [ "$S" = ab ]; then
-    VARS+=('ab,nginx,$CORES,HTTP-Req/s' 'ab,nginx,$CPUS,HTTP-Req/s')
+    VARS+=('ab,nginx,56,HTTP-Req/s')
   elif [ "$S" = fortio ]; then
     VARS+=('fortio,fortio,-c 20 -qps=2000 -t=60s,p999 latency ms' 'fortio,fortio,-grpc -s 10 -c 20 -qps=2000 -t=60s,p999 latency ms')
   fi

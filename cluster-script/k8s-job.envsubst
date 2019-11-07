@@ -126,7 +126,7 @@ spec:
               done
               SYSTEM="$(cat /tmp/system-out)"
               for i in $(seq 1 $ITERATIONS); do
-                iperf3 -p "$PORT" -P $PARAMETER -c iperf3-service --time 30 -J | tee /dev/stderr | grep bits_per_second | tail -n 1 | cut -d : -f 2 | cut -d , -f 1 | cut -d . -f 1 | xargs | echo "$(( $(cat)/1000/1000 ))" | printf '\nCSV:iperf3 $MODE,streams=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+                iperf3 -p "$PORT" $PARAMETER -c iperf3-service --time 30 -J | tee /dev/stderr | grep bits_per_second | tail -n 1 | cut -d : -f 2 | cut -d , -f 1 | cut -d . -f 1 | xargs | echo "$(( $(cat)/1000/1000 ))" | printf '\nCSV:iperf3 $MODE,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
               done
             elif [ $JOBTYPE = ab ] && [ $MODE = nginx ]; then
               PORT=8000
