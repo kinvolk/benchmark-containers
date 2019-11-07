@@ -17,8 +17,8 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  COST:          Stores an additional cost/hour value, e.g., 1.0"
   echo "  META:          Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
   echo "  BENCHMARKNODE: Specifies the node where the benchmark work load runs on."
-  echo "  NETWORKNODE:   Specifies the node to label as second server for the network benchmarks. It should have the same hardware as BENCHMARKNODE."
-  echo "  FIXEDX86NODE:  Specifies the node which is used as client to measure latencies. It should be the same x86 hardware for all clusters (Can be NETWORKNODE if they have the same type)."
+  echo "  NETWORKNODE:   Specifies the node used as second server for the network benchmarks. It should have the same hardware as BENCHMARKNODE."
+  echo "  FIXEDX86NODE:  Specifies the node used as client to measure latencies. It should be the same x86 hardware for all clusters (Can be NETWORKNODE if they have the same type)."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
   echo "  NETWORK=\"iperf3 ab fortio\":     Space-separated list of network benchmarks to run (limited to the named ones)"
@@ -91,18 +91,15 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   kubectl apply -f "${script_dir}"/helpers.yaml
   count=0; while [ "x${VARS[count]}" != "x" ]; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
-    kubectl label --overwrite=true nodes "$BENCHMARKNODE" benchmark-node=benchmark-server
-    BENCHNODESELECTOR=benchmark-server
+    BENCHNODESELECTOR="$BENCHMARKNODE"
     BENCHARCH="$ARCH"
     if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
-      kubectl label --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server
-      NETNODESELECTOR=network-server
+      NETNODESELECTOR="$NETWORKNODE"
       if [ "$JOBTYPE" = fortio ]; then
         # Run the server on the BENCHMARKNODE and not on the NETWORKNODE
-        # (allows to set NETWORKNODE=FIXEDX86NODE when they are the same type, because the label is overwritten)
-        NETNODESELECTOR=benchmark-server
-        kubectl label --overwrite=true nodes "$FIXEDX86NODE" benchmark-node=fixed-x86-server
-        BENCHNODESELECTOR=fixed-x86-server
+        # (allows to set NETWORKNODE=FIXEDX86NODE when they are the same type)
+        NETNODESELECTOR="$BENCHMARKNODE"
+        BENCHNODESELECTOR="$FIXEDX86NODE"
         BENCHARCH=amd64
       fi
       if [ "$JOBNAME" = nginx ]; then
@@ -119,7 +116,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
         echo "Unknown JOBNAME"
         exit 1
       fi
-      export JOBNAME PORT NETNODESELECTOR
+      export ARCH JOBNAME PORT NETNODESELECTOR
       cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT $NETNODESELECTOR' | kubectl apply -f -
     fi
     MODE="$JOBNAME"
@@ -132,6 +129,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     # Here "export" is needed so that the envubst process can see the variables
     cat "$script_dir/k8s-job.envsubst" | envsubst '$BENCHNODESELECTOR $JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
     ARCH="$PREVARCH"
+    export ARCH
     while true; do
       status="$(kubectl get job -n benchmark "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then

@@ -25,7 +25,7 @@ spec:
           defaultMode: 0777
       nodeSelector:
         kubernetes.io/arch: $ARCH
-        benchmark-node: $BENCHNODESELECTOR
+        kubernetes.io/hostname: $BENCHNODESELECTOR
       containers:
       - name: cont
         resources:
