@@ -117,7 +117,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     fi
     MODE="$JOBNAME"
     ID="$(date +%s%4N | tail -c +5)-$RANDOM"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//g' | sed -e 's/\///g' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     echo "starting $JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID"
     PREVARCH="$ARCH"
     ARCH="$BENCHARCH"
@@ -148,7 +148,7 @@ fi
 if [ "$(echo "$arg" | grep gather)" != "" ]; then
   count=0; while [ "x${VARS[count]}" != "x" ]; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//g' | sed -e 's/\///g' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl logs -n benchmark "$(kubectl get pods -n benchmark --selector=job-name="$j" --output=jsonpath='{.items[*].metadata.name}')" |  grep --binary-files=text '^CSV:' | cut -d : -f 2- > "$j$ARCH.csv"
@@ -160,7 +160,7 @@ fi
 if [ "$(echo "$arg" | grep plot)" != "" ]; then
   count=0; while [ "x${VARS[count]}" != "x" ]; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//g' | sed -e 's/\///g' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
 	{ 	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
     	"$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
@@ -173,7 +173,7 @@ fi
 if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
   count=0; while [ "x${VARS[count]}" != "x" ]; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
-    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//' | sed -e 's/\///' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
+    PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//g' | sed -e 's/\///g' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
     jobs="$(kubectl get jobs -n benchmark --selector=app="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE" --output=jsonpath='{.items[*].metadata.name}')"
     for j in $jobs; do
       kubectl delete job -n benchmark "$j"
