@@ -186,7 +186,7 @@ spec:
                 if [ "$U" = s ]; then
                   LATENCY="$(awk "BEGIN{print "$LATENCY"/1000}")"
                 fi
-                printf '\nCSV:wrk2 $MODE,$PARAMETER (req body len 100),%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$LATENCY"
+                printf '\nCSV:wrk2 $MODE,$PARAMETER (body 100B),%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$LATENCY"
               done
             else
               echo "ERROR: Unknown mode"
