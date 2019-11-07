@@ -17,8 +17,7 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  COST:          Stores an additional cost/hour value, e.g., 1.0"
   echo "  META:          Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
   echo "  BENCHMARKNODE: Specifies the node where the benchmark work load runs on."
-  echo "  NETWORKNODE:   Specifies the node to label as second server for the network benchmarks. It should have the same hardware as BENCHMARKNODE."
-  echo "  FIXEDX86NODE:  Specifies the node which is used as client to measure latencies. It should be the same x86 hardware for all clusters (Can be NETWORKNODE if they have the same type)."
+  echo "  FIXEDX86NODE:  Specifies the node used as client to for network benchmarks. It should be the same x86 hardware for all clusters."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
   echo "  NETWORK=\"iperf3 ab fortio\":     Space-separated list of network benchmarks to run (limited to the named ones)"
@@ -48,9 +47,9 @@ ITERATIONS="${ITERATIONS-1}"
 
 if [ "$arg" != "plot" ]; then
   # Test if required env variables are set
-  echo "$KUBECONFIG $ARCH $COST $META $BENCHMARKNODE $NETWORKNODE $FIXEDX86NODE" > /dev/null
+  echo "$KUBECONFIG $ARCH $COST $META $BENCHMARKNODE $FIXEDX86NODE" > /dev/null
   # Log them for the user for awareness
-  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" BENCHMARKNODE=\"$BENCHMARKNODE\" NETWORKNODE=\"$NETWORKNODE\" FIXEDX86NODE=\"$FIXEDX86NODE\""
+  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" BENCHMARKNODE=\"$BENCHMARKNODE\" FIXEDX86NODE=\"$FIXEDX86NODE\""
 fi
 
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
@@ -75,11 +74,12 @@ for S in $SYSBENCH; do
   fi
   VARS+=("$(printf 'sysbench,%s,$ONE,%s' "$S" "$COL")" "$(printf 'sysbench,%s,$CORES,%s' "$S" "$COL")" "$(printf 'sysbench,%s,$CPUS,%s' "$S" "$COL")")
 done
+# Do not use CPUS and CORES here which now refer to the fixed x86 system (which may be correct but rather use fixed numbers here to avoid confusion)
 for S in $NETWORK; do
   if [ "$S" = iperf3 ]; then
-    VARS+=('iperf3,iperf3,$ONE,MBit/s' 'iperf3,iperf3,$CORES,MBit/s' 'iperf3,iperf3,$CPUS,MBit/s')
+    VARS+=('iperf3,iperf3,-P 1 -R,MBit/s' 'iperf3,iperf3,-P 28 -R,MBit/s' 'iperf3,iperf3,-P 56 -R,MBit/s')
   elif [ "$S" = ab ]; then
-    VARS+=('ab,nginx,$CORES,HTTP-Req/s' 'ab,nginx,$CPUS,HTTP-Req/s')
+    VARS+=('ab,nginx,56,HTTP-Req/s')
   elif [ "$S" = fortio ]; then
     VARS+=('fortio,fortio,-c 20 -qps=2000 -t=60s,p999 latency ms' 'fortio,fortio,-grpc -s 10 -c 20 -qps=2000 -t=60s,p999 latency ms')
   fi
@@ -91,20 +91,13 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   kubectl apply -f "${script_dir}"/helpers.yaml
   count=0; while [ "x${VARS[count]}" != "x" ]; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
-    kubectl label --overwrite=true nodes "$BENCHMARKNODE" benchmark-node=benchmark-server
-    BENCHNODESELECTOR=benchmark-server
+    BENCHNODESELECTOR="$BENCHMARKNODE"
     BENCHARCH="$ARCH"
     if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
-      kubectl label --overwrite=true nodes "$NETWORKNODE" benchmark-node=network-server
-      NETNODESELECTOR=network-server
-      if [ "$JOBTYPE" = fortio ]; then
-        # Run the server on the BENCHMARKNODE and not on the NETWORKNODE
-        # (allows to set NETWORKNODE=FIXEDX86NODE when they are the same type, because the label is overwritten)
-        NETNODESELECTOR=benchmark-server
-        kubectl label --overwrite=true nodes "$FIXEDX86NODE" benchmark-node=fixed-x86-server
-        BENCHNODESELECTOR=fixed-x86-server
-        BENCHARCH=amd64
-      fi
+      # Run the benchmark client on the FIXEDX86NODE and the server on the BENCHMARKNODE
+      BENCHNODESELECTOR="$FIXEDX86NODE"
+      BENCHARCH=amd64
+      NETNODESELECTOR="$BENCHMARKNODE"
       if [ "$JOBNAME" = nginx ]; then
         PORT=8000
       elif [ "$JOBNAME" = iperf3 ]; then
@@ -119,7 +112,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
         echo "Unknown JOBNAME"
         exit 1
       fi
-      export JOBNAME PORT NETNODESELECTOR
+      export ARCH JOBNAME PORT NETNODESELECTOR
       cat "${script_dir}"/network-server.envsubst | envsubst '$ARCH $JOBNAME $PORT $NETNODESELECTOR' | kubectl apply -f -
     fi
     MODE="$JOBNAME"
@@ -132,6 +125,7 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     # Here "export" is needed so that the envubst process can see the variables
     cat "$script_dir/k8s-job.envsubst" | envsubst '$BENCHNODESELECTOR $JOBTYPE $MODE $ID $PARAMETER $PARAMETERQUOTE $RESULT $ARCH $COST $META $ITERATIONS' | kubectl apply -f -
     ARCH="$PREVARCH"
+    export ARCH
     while true; do
       status="$(kubectl get job -n benchmark "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-$ID" --output=jsonpath='{.status.conditions[0].type}')"
       if [ "$status" = Complete ]; then
