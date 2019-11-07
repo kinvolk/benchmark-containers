@@ -163,6 +163,31 @@ spec:
                 cat out.json > /dev/stderr
                 tac out.json | grep -m 1 Value | cut  -d ':' -f 2 | xargs | printf '\nCSV:fortio,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(awk "BEGIN{print "$(cat)"*1000}")"
               done
+            elif [ $JOBTYPE = wrk2-benchmark ] && [ $MODE = nginx ]; then
+              PORT=8000
+              while ! echo | nc nginx-service "$PORT"; do
+                echo "Waiting for nginx-service..."
+                sleep 1
+              done
+              while ! echo | nc nginx-service 9999 > /tmp/system-out; do
+                sleep 1
+              done
+              SYSTEM="$(cat /tmp/system-out)"
+              for i in $(seq 1 $ITERATIONS); do
+                LATENCY="$(wrk $PARAMETER -L -s /usr/local/share/wrk2/body-100-report.lua "http://nginx-service:$PORT" | tee /dev/stderr | grep 99.900% | awk '{print $2}')"
+                # cut away unit (ms or s)
+                if echo "$LATENCY" | grep ms > /dev/null; then
+                  U=m
+                else
+                  U=s
+                fi
+                LATENCY="$(echo $LATENCY | cut -d "$U" -f 1)"
+                # calculate ms if unit was s
+                if [ "$U" = s ]; then
+                  LATENCY="$(awk "BEGIN{print "$LATENCY"/1000}")"
+                fi
+                printf '\nCSV:wrk2 $MODE,$PARAMETER (req body len 100),%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$LATENCY"
+              done
             else
               echo "ERROR: Unknown mode"
               exit 1
