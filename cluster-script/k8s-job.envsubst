@@ -121,6 +121,10 @@ spec:
                 echo "Waiting for iperf3-service..."
                 sleep 1
               done
+              while ! echo | nc iperf3-service 9999 > /tmp/system-out; do
+                sleep 1
+              done
+              SYSTEM="$(cat /tmp/system-out)"
               for i in $(seq 1 $ITERATIONS); do
                 iperf3 -p "$PORT" -P $PARAMETER -c iperf3-service --time 30 -J | tee /dev/stderr | grep bits_per_second | tail -n 1 | cut -d : -f 2 | cut -d , -f 1 | cut -d . -f 1 | xargs | echo "$(( $(cat)/1000/1000 ))" | printf '\nCSV:iperf3 $MODE,streams=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
               done
@@ -130,6 +134,10 @@ spec:
                 echo "Waiting for nginx-service..."
                 sleep 1
               done
+              while ! echo | nc nginx-service 9999 > /tmp/system-out; do
+                sleep 1
+              done
+              SYSTEM="$(cat /tmp/system-out)"
               for i in $(seq 1 $ITERATIONS); do
                 ab -c $PARAMETER -t 30 -n 999999999 http://nginx-service:8000/ 2>&1 | tee /dev/stderr | grep 'Requests per second' | awk '{print $4}' | printf '\nCSV:ab $MODE,connections=$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
               done

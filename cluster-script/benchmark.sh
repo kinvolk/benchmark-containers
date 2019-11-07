@@ -17,8 +17,7 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  COST:          Stores an additional cost/hour value, e.g., 1.0"
   echo "  META:          Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
   echo "  BENCHMARKNODE: Specifies the node where the benchmark work load runs on."
-  echo "  NETWORKNODE:   Specifies the node used as second server for the network benchmarks. It should have the same hardware as BENCHMARKNODE."
-  echo "  FIXEDX86NODE:  Specifies the node used as client to measure latencies. It should be the same x86 hardware for all clusters (Can be NETWORKNODE if they have the same type)."
+  echo "  FIXEDX86NODE:  Specifies the node used as client to for network benchmarks. It should be the same x86 hardware for all clusters."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
   echo "  NETWORK=\"iperf3 ab fortio\":     Space-separated list of network benchmarks to run (limited to the named ones)"
@@ -48,9 +47,9 @@ ITERATIONS="${ITERATIONS-1}"
 
 if [ "$arg" != "plot" ]; then
   # Test if required env variables are set
-  echo "$KUBECONFIG $ARCH $COST $META $BENCHMARKNODE $NETWORKNODE $FIXEDX86NODE" > /dev/null
+  echo "$KUBECONFIG $ARCH $COST $META $BENCHMARKNODE $FIXEDX86NODE" > /dev/null
   # Log them for the user for awareness
-  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" BENCHMARKNODE=\"$BENCHMARKNODE\" NETWORKNODE=\"$NETWORKNODE\" FIXEDX86NODE=\"$FIXEDX86NODE\""
+  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" BENCHMARKNODE=\"$BENCHMARKNODE\" FIXEDX86NODE=\"$FIXEDX86NODE\""
 fi
 
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
@@ -94,14 +93,10 @@ if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
     BENCHNODESELECTOR="$BENCHMARKNODE"
     BENCHARCH="$ARCH"
     if [ "$JOBTYPE" = iperf3 ] || [ "$JOBTYPE" = ab ] || [ "$JOBTYPE" = fortio ]; then
-      NETNODESELECTOR="$NETWORKNODE"
-      if [ "$JOBTYPE" = fortio ]; then
-        # Run the server on the BENCHMARKNODE and not on the NETWORKNODE
-        # (allows to set NETWORKNODE=FIXEDX86NODE when they are the same type)
-        NETNODESELECTOR="$BENCHMARKNODE"
-        BENCHNODESELECTOR="$FIXEDX86NODE"
-        BENCHARCH=amd64
-      fi
+      # Run the benchmark client on the FIXEDX86NODE and the server on the BENCHMARKNODE
+      BENCHNODESELECTOR="$FIXEDX86NODE"
+      BENCHARCH=amd64
+      NETNODESELECTOR="$BENCHMARKNODE"
       if [ "$JOBNAME" = nginx ]; then
         PORT=8000
       elif [ "$JOBNAME" = iperf3 ]; then
