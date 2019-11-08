@@ -55,7 +55,7 @@ fi
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
 SYSBENCH="${SYSBENCH-fileio mem cpu}"
 MEMTIER="${MEMTIER-memcached redis}"
-NETWORK="${NETWORK-iperf3 ab fortio}"
+NETWORK="${NETWORK-iperf3 ab fortio wrk2}"
 
 # List of benchmarks: JOBTYPE,JOBNAME,PARAMETER,RESULT
 # Warning, $JOBTYPE$JOBNAME$PARAMETER should not be a valid prefix for another because of globbing.
