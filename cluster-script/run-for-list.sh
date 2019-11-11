@@ -2,8 +2,9 @@
 set -euo pipefail
 
 if [ "$#" != 2 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-  echo "Usage: $0 FILE ARG"
+  echo "Usage: NORMALIZATIONSYSTEM=… $0 FILE ARG"
   echo "Runs 'benchmark.sh ARG' for each cluster entry in FILE."
+  echo "NORMALIZATIONSYSTEM is a global environment variable that is passed to benchmark.sh"
   echo "FILE contains one cluster entry per line, stored as comma-separated values"
   echo "(no whitespaces before or after comma) in the following order:"
   echo "KUBECONFIG,ARCH,COST,META,ITERATIONS,BENCHMARKNODE,FIXEDX86NODE"
@@ -17,13 +18,15 @@ fi
 FILE="$1"
 ARG="$2"
 
+echo "$NORMALIZATIONSYSTEM" > /dev/null
+
 # Assuming that benchmark.sh is in the same folder as this script
 P="$(dirname "$(readlink -f $(which "$0"))")"
 
 WAIT=""
 while IFS= read -r line || [ -n "$line" ]; do
   IFS=, read KUBECONFIG ARCH COST META ITERATIONS BENCHMARKNODE FIXEDX86NODE <<< "$line"
-  export KUBECONFIG ARCH COST META ITERATIONS BENCHMARKNODE FIXEDX86NODE
+  export KUBECONFIG ARCH COST META ITERATIONS BENCHMARKNODE FIXEDX86NODE NORMALIZATIONSYSTEM
   "$P/benchmark.sh" "$ARG" &
   WAIT+="$! "
   if [ "$ARG" = plot ]; then

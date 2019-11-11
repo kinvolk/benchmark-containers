@@ -12,12 +12,13 @@ if [ "$#" != 1 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   echo "  cleanup:   Deletes the Kubernetes Jobs (optional cleanup)"
   echo "  (Valid combinations: $COMBINATIONS)"
   echo "Required env variables:"
-  echo "  KUBECONFIG:    Specifies the cluster to use"
-  echo "  ARCH:          Specifies which container image suffix to use (either arm64 or amd64)"
-  echo "  COST:          Stores an additional cost/hour value, e.g., 1.0"
-  echo "  META:          Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
-  echo "  BENCHMARKNODE: Specifies the node where the benchmark work load runs on."
-  echo "  FIXEDX86NODE:  Specifies the node used as client to for network benchmarks. It should be the same x86 hardware for all clusters."
+  echo "  KUBECONFIG:          Specifies the cluster to use"
+  echo "  ARCH:                Specifies which container image suffix to use (either arm64 or amd64)"
+  echo "  COST:                Stores an additional cost/hour value, e.g., 1.0"
+  echo "  META:                Stores additional metadata about the benchmark run, use it to provide the location, e.g., sjc1 as the Packet datacenter region"
+  echo "  BENCHMARKNODE:       Specifies the node where the benchmark work load runs on."
+  echo "  FIXEDX86NODE:        Specifies the node used as client to for network benchmarks. It should be the same x86 hardware for all clusters."
+  echo "  NORMALIZATIONSYSTEM: Specifies the prefix of the system that is used for normalization in the summary graph), e.g., Ampere eMAG."
   echo "Optional env variables:"
   echo "  ITERATIONS=1:                   Number of runs inside a Job"
   echo "  NETWORK=\"iperf3 ab fortio wrk2\": Space-separated list of network benchmarks to run (limited to the named ones)"
@@ -47,9 +48,9 @@ ITERATIONS="${ITERATIONS-1}"
 
 if [ "$arg" != "plot" ]; then
   # Test if required env variables are set
-  echo "$KUBECONFIG $ARCH $COST $META $BENCHMARKNODE $FIXEDX86NODE" > /dev/null
+  echo "$KUBECONFIG $ARCH $COST $META $BENCHMARKNODE $FIXEDX86NODE $NORMALIZATIONSYSTEM" > /dev/null
   # Log them for the user for awareness
-  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" BENCHMARKNODE=\"$BENCHMARKNODE\" FIXEDX86NODE=\"$FIXEDX86NODE\""
+  echo "KUBECONFIG=\"$KUBECONFIG\" ARCH=\"$ARCH\" COST=\"$COST\" META=\"$META\" ITERATIONS=\"$ITERATIONS\" BENCHMARKNODE=\"$BENCHMARKNODE\" FIXEDX86NODE=\"$FIXEDX86NODE\" NORMALIZATIONSYSTEM=\"$NORMALIZATIONSYSTEM\""
 fi
 
 STRESSNG="${STRESSNG-spawn hsearch crypt atomic tsearch qsort shm sem lsearch bsearch vecmath matrix memcpy}"
@@ -87,6 +88,8 @@ for S in $NETWORK; do
   fi
 done
 VARS+=("")
+
+CSVS=()
 
 if [ "$(echo "$arg" | grep benchmark)" != "" ]; then
   echo "Deploying helpers"
@@ -163,16 +166,26 @@ if [ "$(echo "$arg" | grep plot)" != "" ]; then
   count=0; while [ "x${VARS[count]}" != "x" ]; do
     IFS=, read -r JOBTYPE JOBNAME PARAMETER RESULT <<< "${VARS[count]}"
     PARAMETERQUOTE="$(echo "$PARAMETER" | sed -e 's/\$//g' | sed -e 's/\///g' | sed -e 's/ //g' | sed -e 's/=//g' | tr '[:upper:]' '[:lower:]')"
-	{ 	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
-    	"$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+    # The files do not have whitespace in their names
+    FILES="$(ls "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv 2> /dev/null || true)"
+    CSVS+=($FILES)
+    if [ "$FILES" != "" ]; then
+      { "$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.svg" "$RESULT" $FILES
+        "$script_dir/plot" --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE.png" "$RESULT" $FILES
         if [ "$JOBTYPE" != wrk2-benchmark ] && [ "$JOBTYPE" != fortio ] ; then
-          "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
-          "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" "$JOBTYPE-$JOBNAME-$PARAMETERQUOTE"*csv
+          "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.svg" "$RESULT" $FILES
+          "$script_dir/plot" --cost --parameter --outfile="$JOBTYPE-$JOBNAME-$PARAMETERQUOTE-cost.png" "$RESULT" $FILES
         fi ; } &
+    fi
   count=$(( $count + 1 ))
   done
   wait
-  echo "done plotting"
+  echo "done plotting single graphs"
+  "$script_dir/plot-summary" --outfile summary.svg "$NORMALIZATIONSYSTEM" ${CSVS[*]}
+  "$script_dir/plot-summary" --outfile summary.png "$NORMALIZATIONSYSTEM" ${CSVS[*]}
+  "$script_dir/plot-summary" --cost --skip 'wrk2 nginx,fortio' --outfile summary-costs.svg "$NORMALIZATIONSYSTEM" ${CSVS[*]}
+  "$script_dir/plot-summary" --cost --skip 'wrk2 nginx,fortio' --outfile summary-costs.png "$NORMALIZATIONSYSTEM" ${CSVS[*]}
+  echo "done plotting summary graphs"
 fi
 if [ "$(echo "$arg" | grep cleanup)" != "" ]; then
   count=0; while [ "x${VARS[count]}" != "x" ]; do

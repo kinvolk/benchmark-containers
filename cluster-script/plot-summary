@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+import numpy as np
+import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+import argparse
+
+parser = argparse.ArgumentParser(description="Plot summary of all normalized results.")
+parser.add_argument("--outfile", type=str, help="Name of the SVG output file")
+parser.add_argument("normalizeto", type=str, help="Normalize results to this system's result")
+parser.add_argument("--cost", dest="cost", action="store_true", help="Plot perf/cost")
+parser.add_argument("--skip", type=str, help='Skip these benchmarks (Comma-separated list)')
+parser.add_argument("csvfiles", type=str, nargs='+', help="All CSV files, even from different benchmarks")
+parser.set_defaults(logy=False, outfile='out.svg', skip='')
+args = parser.parse_args()
+resultindex = 3  # index of result column
+
+benchmarks = {}
+for i in args.csvfiles:
+  d = pd.read_csv(i)
+  results = d.keys()[3]
+  if d['Name'].values[0] in args.skip.split(','):
+    continue
+  title = d['Name'].values[0] + ': ' + d['Parameter'].values[0]
+  existing = [benchmarks.get(title)]
+  if existing[0] is None:
+    existing = []
+  benchmarks[title] = pd.concat([d] + existing)
+
+normalized_perf = 'Normalized performance' + ('/$' if args.cost else '')
+normalized = {'Benchmark': [], 'System': [], normalized_perf: []}
+
+for title, d in benchmarks.items():
+  d = d.sort_values(by=['System'])
+  results = d.keys()[resultindex]
+  d['System'] = [l.replace(' (', '\n(') for l in d['System']]
+  if args.cost:
+    costs = results + '/$'
+    d[costs] = [float(l)/float(c) for l, c in zip(d[results], d['Cost'])]
+    results = costs
+  ts = d['System'].unique()
+  values = [(title, t, d[d['System']==t][results].mean()) for t in ts]
+  normalize_val = None
+  for t, s, v in values:
+    if s.startswith(args.normalizeto):
+      normalize_val = v
+  if normalize_val is None:
+    print(d)
+    raise Exception('Normalization error: Result for ' + args.normalizeto + ' not found')
+  values = [(title, s, v/normalize_val) for title, s, v in values]
+  normalized['Benchmark'].extend([title for title, _, _ in values])
+  normalized['System'].extend([s for _, s, _ in values])
+  normalized[normalized_perf].extend([v for _, _, v in values])
+
+df = pd.DataFrame(normalized)
+
+# Mind the \n
+color_keys = {'Ampere eMAG\n(Sockets: 1. CPUs: 32. Cores: 32. HT: off)': 'C1',
+              'AuthenticAMD AMD EPYC 7401P 24-Core Processor\n(Sockets: 1. CPUs: 48. Cores: 24. HT: on)': 'C2',
+              'AuthenticAMD AMD EPYC 7401P 24-Core Processor\n(Sockets: 1. CPUs: 24. Cores: 24. HT: off)': 'C8',
+              'GenuineIntel Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz\n(Sockets: 2. CPUs: 56. Cores: 28. HT: on)': 'C0',
+              'GenuineIntel Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz\n(Sockets: 2. CPUs: 28. Cores: 28. HT: off)': 'C9',
+              }
+colors = []
+c = 0
+for col in df['System']:
+  color = color_keys.get(col)
+  while color is None:
+    color = 'C' + str(c)
+    c += 1
+    if color in color_keys.values():
+      color = None
+  colors.append(color)
+
+fontsize = 18
+plt.rc('legend', fontsize=fontsize)  # see https://stackoverflow.com/a/39566040 for more options
+plt.rc('font', size=fontsize)
+plt.rc('axes', labelsize=fontsize)
+
+df = df.pivot_table(index='Benchmark', columns='System', values=normalized_perf)
+p=df.plot(kind='barh', title=normalized_perf, figsize=(20, 35), fontsize=fontsize, color=colors)
+handles, labels = p.get_legend_handles_labels()
+p.legend(reversed(handles), reversed(labels), loc='upper left', bbox_to_anchor=(1,1), borderaxespad=0.)
+
+plt.tight_layout()
+plt.savefig(args.outfile)

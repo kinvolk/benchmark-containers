@@ -27,16 +27,39 @@ if args.cost:
   results = costs
 ts = d[types].unique()
 
-df = pd.DataFrame({types: ts, results: [d[d[types]==t][results].mean() for t in ts]})
+df = pd.DataFrame({types: ts, results: [d[d[types]==t][results].mean() for t in ts], 'Benchmark': [title for _ in ts]})
 distances_to_mins = [d[d[types]==t][results].mean()-d[d[types]==t][results].min() for t in ts]
 distances_to_maxs = [d[d[types]==t][results].max()-d[d[types]==t][results].mean() for t in ts]
 minmax = [[distances_to_mins, distances_to_maxs]]
+# Mind the \n
+color_keys = {'Ampere eMAG\n(Sockets: 1. CPUs: 32. Cores: 32. HT: off)': 'C1',
+              'AuthenticAMD AMD EPYC 7401P 24-Core Processor\n(Sockets: 1. CPUs: 48. Cores: 24. HT: on)': 'C2',
+              'AuthenticAMD AMD EPYC 7401P 24-Core Processor\n(Sockets: 1. CPUs: 24. Cores: 24. HT: off)': 'C8',
+              'GenuineIntel Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz\n(Sockets: 2. CPUs: 56. Cores: 28. HT: on)': 'C0',
+              'GenuineIntel Intel(R) Xeon(R) Gold 5120 CPU @ 2.20GHz\n(Sockets: 2. CPUs: 28. Cores: 28. HT: off)': 'C9',
+              }
+colors = []
+c = 0
+for col in df['System']:
+  color = color_keys.get(col)
+  while color is None:
+    color = 'C' + str(c)
+    c += 1
+    if color in color_keys.values():
+      color = None
+  colors.append(color)
 
 fontsize = 18
 plt.rc('legend', fontsize=fontsize)  # see https://stackoverflow.com/a/39566040 for more options
 plt.rc('font', size=fontsize)
 plt.rc('axes', labelsize=fontsize)
-p=df.plot(kind='barh', x=types, y=results, xerr=minmax, title=title, figsize=(15, 8), fontsize=fontsize)
+df = df.pivot_table(index='Benchmark', columns=types, values=results)
+minmax = np.array(minmax).transpose().tolist()
+p=df.plot(kind='barh', xerr=minmax, title=results, figsize=(15, 10), fontsize=fontsize, color=colors)
+p.yaxis.set_label_position("right")
+p.yaxis.tick_right()
+handles, labels = p.get_legend_handles_labels()
+p.legend(reversed(handles), reversed(labels), loc='upper left', bbox_to_anchor=(1,1), borderaxespad=0.)
 
 plt.tight_layout()
 plt.savefig(args.outfile)
