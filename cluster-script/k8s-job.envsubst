@@ -116,17 +116,26 @@ spec:
               done
               killall redis-server memcached || true
             elif [ $JOBTYPE = iperf3 ] && [ $MODE = iperf3 ]; then
-              PORT=6000
-              while ! echo | nc iperf3-service "$PORT"; do
-                echo "Waiting for iperf3-service..."
-                sleep 1
+              for PORT in $(seq 7000 7009); do
+                while ! echo | nc iperf3-service "$PORT"; do
+                  echo "Waiting for iperf3-service..."
+                  sleep 1
+                done
               done
               while ! echo | nc iperf3-service 9999 > /tmp/system-out; do
                 sleep 1
               done
               SYSTEM="$(cat /tmp/system-out)"
               for i in $(seq 1 $ITERATIONS); do
-                iperf3 -p "$PORT" $PARAMETER -c iperf3-service --time 30 -J | tee /dev/stderr | grep bits_per_second | tail -n 1 | cut -d : -f 2 | cut -d , -f 1 | cut -d . -f 1 | xargs | echo "$(( $(cat)/1000/1000 ))" | printf '\nCSV:iperf3 $MODE,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$(cat)"
+                for PORT in $(seq 7000 7055); do
+                  (iperf3 -p "$PORT" $PARAMETER -c iperf3-service --time 30 -J | grep bits_per_second | tail -n 1 | cut -d : -f 2 | cut -d , -f 1 | cut -d . -f 1 | xargs | echo "$(( $(cat)/1000/1000 ))" > "/tmp/$PORT" ) &
+                done
+                wait
+                SUM=0
+                for P in $(cd /tmp; cat $(seq 7000 7055)); do
+                  SUM="$(( SUM + P ))"
+                done
+                printf '\nCSV:iperf3 $MODE,$PARAMETER,%s,%s,$ID,$COST,$META\n' "$SYSTEM" "$SUM"
               done
             elif [ $JOBTYPE = ab ] && [ $MODE = nginx ]; then
               PORT=8000

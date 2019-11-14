@@ -51,6 +51,62 @@ spec:
         image: quay.io/kinvolk/$JOBNAME:latest-$ARCH
         ports:
           - containerPort: $PORT
+          - containerPort: 7000
+          - containerPort: 7001
+          - containerPort: 7002
+          - containerPort: 7003
+          - containerPort: 7004
+          - containerPort: 7005
+          - containerPort: 7006
+          - containerPort: 7007
+          - containerPort: 7008
+          - containerPort: 7009
+          - containerPort: 7010
+          - containerPort: 7011
+          - containerPort: 7012
+          - containerPort: 7013
+          - containerPort: 7014
+          - containerPort: 7015
+          - containerPort: 7016
+          - containerPort: 7017
+          - containerPort: 7018
+          - containerPort: 7019
+          - containerPort: 7020
+          - containerPort: 7021
+          - containerPort: 7022
+          - containerPort: 7023
+          - containerPort: 7024
+          - containerPort: 7025
+          - containerPort: 7026
+          - containerPort: 7027
+          - containerPort: 7028
+          - containerPort: 7029
+          - containerPort: 7030
+          - containerPort: 7031
+          - containerPort: 7032
+          - containerPort: 7033
+          - containerPort: 7034
+          - containerPort: 7035
+          - containerPort: 7036
+          - containerPort: 7037
+          - containerPort: 7038
+          - containerPort: 7039
+          - containerPort: 7040
+          - containerPort: 7041
+          - containerPort: 7042
+          - containerPort: 7043
+          - containerPort: 7044
+          - containerPort: 7045
+          - containerPort: 7046
+          - containerPort: 7047
+          - containerPort: 7048
+          - containerPort: 7049
+          - containerPort: 7050
+          - containerPort: 7051
+          - containerPort: 7052
+          - containerPort: 7053
+          - containerPort: 7054
+          - containerPort: 7055
           - containerPort: 9999
         command: ["/bin/sh", "-c"]
         args:
@@ -67,7 +123,10 @@ spec:
             chmod +x /tmp/system
             nc -lk -p 9999 -e /tmp/system &
             if [ $JOBNAME = iperf3 ]; then
-              iperf3 -s -p $PORT
+              for P in $(seq 7000 7055); do
+                iperf3 -s -p $P &
+              done
+              wait
             elif [ $JOBNAME = nginx ]; then
               nginx -g "daemon off;"
             elif [ $JOBNAME = fortio ]; then
