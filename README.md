@@ -148,32 +148,48 @@ benchmark and show the results.
 ## Example Usage
 
 We provision three [Lokomotive Kubernetes](https://github.com/kinvolk/lokomotive-kubernetes/) clusters
-on Packet. The `xeon` cluster gets a worker pool `intel` with an Intel XEON node,
-the `epyc` cluster gets a worker pool `amd` with an AMD EPYC worker node,
-and the `emag` cluster gets a worker pool `arm` with an Ampere eMAG worker node.
-In addition, all three clusters get another worker pool `x86` with an Intel XEON worker node as unified
+on Packet. The `intel` cluster gets a worker pool `pool` with an Intel XEON node,
+the `amd` cluster gets a worker pool `pool` with an AMD EPYC worker node,
+and the `ampere` cluster gets a worker pool `pool` with an Ampere eMAG worker node.
+In addition, all three clusters get another worker pool `x86client` with an Intel XEON worker node as unified
 network client.
+First change to the subdirectory `cluster-terraform` which has all three clusters preconfigured.
+Create a `terraform.tfvar` file and enter your Packet project ID, your SSH public keys,
+your domain zone managed by AWS Route53 and its ID:
+
+```
+project_id = "abcdef-abcdef-abcdef"
+ssh_keys = ["ssh-rsa AAAAB…abcdefg mail@mail.mail"]
+dns_zone = "mydelegatedawssubdomain.mydomain.net"
+dns_zone_id = "Z1234ABCDEFG"
+```
+
+Set the environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`,
+and `PACKET_AUTH_TOKEN` for Terraform.
+With Terraform 11, run `terraform init` followed by `terraform apply` to create the clusters.
 
 After provisioning the clusters and noting the worker node names
 we save this information to a file `list` as in the following lines.
 The format is `KUBECONFIG,ARCH,COST,META,ITERATIONS,BENCHMARKNODE,FIXEDX86NODE`.
 `META` here refers to the Packet region, and `COSTS` is 1$/hour for Ampere eMAG and AMD EPYC
 but 2$/hour for Intel XEON benchmark worker nodes.
+If the file is not stored in the same folder as the Terraform assets, adjust the paths.
+If you used other cluster names or pool names, adjust them as well.
 
 ```
-…/packet-lokomotive-intel/assets/auth/kubeconfig,amd64,2.0,ewr1,10,k-xeon-intel-worker-0,k-xeon-x86-worker-0
-…/packet-lokomotive-amd/assets/auth/kubeconfig,amd64,1.0,ewr1,10,k-epyc-amd-worker-0,k-epyc-x86-worker-0
-…/packet-lokomotive-arm/assets/auth/kubeconfig,arm64,1.0,dfw2,10,k-emag-arm-worker-0,k-emag-x86-worker-0
+./assets-intel/auth/kubeconfig,amd64,2.0,sjc1,10,intel-pool-worker-0,intel-x86client-worker-0
+./assets-amd/auth/kubeconfig,amd64,1.0,sjc1,10,amd-pool-worker-0,amd-x86client-worker-0
+./assets-ampere/auth/kubeconfig,arm64,1.0,sjc1,10,ampere-pool-worker-0,ampere-x86client-worker-0
 ```
 
-That list file serves as input for the `run-for-list.sh` script that runs the `benchmark.sh` script for each
+That `list` file serves as input for the `run-for-list.sh` script that runs the `benchmark.sh` script for each
 cluster with the environment variables set up according to the cluster line.
 
 We run the script with the arguments `benchmark` to run a benchmark, and `gather` to store the output
 as local CSV files and creates SVG and PNG graphs in the current directory:
 
 ```
-…/kinvolk/benchmark-containers/cluster-script/run-for-list.sh input benchmark+gather
+…/kinvolk/benchmark-containers/cluster-script/run-for-list.sh list benchmark+gather
 [… prints which benchmarks are run in parallel for all clusters]
 ```
 
@@ -184,7 +200,7 @@ You can observe the output of a run via `KUBECONFIG=… kubectl -n benchmark log
 To not run all benchmarks but only certain ones of a category, specify them via environment variables:
 
 ```
-NETWORK="iperf3 ab" MEMTIER="memcached" STRESSNG=" " /kinvolk/benchmark-containers/cluster-script/run-for-list.sh input benchmark+gather
+NETWORK="iperf3 ab" MEMTIER="memcached" STRESSNG=" " /kinvolk/benchmark-containers/cluster-script/run-for-list.sh list benchmark+gather
 ```
 
 In this example the first variable means that only the `iperf3` and `ab` benchmarks are run (but not `wrk2` and `fortio`) from the `NETWORK` category.
