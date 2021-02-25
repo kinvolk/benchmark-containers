@@ -38,3 +38,7 @@ COPY --from=builder /memcached/ /
 COPY --from=builder /redis/ /
 COPY --from=builder /memtier/ /
 RUN adduser -u 1000 -D benchmark
+
+# Runnable scripts
+COPY run-benchmark.sh /usr/local/bin/run-benchmark.sh
+COPY run-server.sh /usr/local/bin/run-server.sh

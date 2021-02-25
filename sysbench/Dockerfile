@@ -17,3 +17,6 @@ MAINTAINER Kinvolk
 # sysbench
 RUN apk add --update --no-cache so:libgcc_s.so.1 so:libmariadb.so.3 so:libaio.so.1
 COPY --from=builder /sysbench/sysbench-install-root/ /
+
+# Runnable scripts
+COPY run-benchmark.sh /usr/local/bin/run-benchmark.sh

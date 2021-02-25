@@ -14,3 +14,6 @@ MAINTAINER Kinvolk
 
 # stress-ng
 COPY --from=builder /stress-ng/stress-ng /sbin/
+
+# Runnable scripts
+COPY run-benchmark.sh /usr/local/bin/run-benchmark.sh

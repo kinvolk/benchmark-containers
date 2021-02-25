@@ -15,3 +15,10 @@ MAINTAINER Kinvolk
 # iperf3
 RUN apk add --update --no-cache openssl
 COPY --from=builder /iperf3/ /
+
+# The benchmark uses jq to parse the JSON output
+RUN apk add --update --no-cache jq
+
+# Runnable scripts
+COPY run-benchmark.sh /usr/local/bin/run-benchmark.sh
+COPY run-server.sh /usr/local/bin/run-server.sh
