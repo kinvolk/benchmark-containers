@@ -7,14 +7,9 @@ RUN unzip master.zip && \
     make -j && \
     strip wrk
 
-FROM alpine
+FROM benchmark-base
 MAINTAINER Kinvolk
-# dstat
-RUN apk add --update --no-cache py2-six
-COPY --from=dstat-builder /dstat/dstat /usr/local/bin
-COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
-# lscpu
-RUN apk add --update --no-cache util-linux
+
 # wrk2
 RUN apk add --update --no-cache so:libcrypto.so.1.1 so:libssl.so.1.1 so:libgcc_s.so.1
 COPY --from=builder /usr/src/wrk2-master/wrk /usr/local/bin/

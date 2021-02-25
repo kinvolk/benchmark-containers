@@ -9,13 +9,9 @@ RUN tar xzf ${IPERF_VER}.tar.gz && \
     ./configure --disable-profiling && \
     make -j install DESTDIR=/iperf3
 
-
-FROM alpine
+FROM benchmark-base
 MAINTAINER Kinvolk
-# dstat
-RUN apk add --update --no-cache py2-six
-COPY --from=dstat-builder /dstat/dstat /usr/local/bin
-COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
+
 # iperf3
-RUN apk add --update --no-cache util-linux openssl
+RUN apk add --update --no-cache openssl
 COPY --from=builder /iperf3/ /

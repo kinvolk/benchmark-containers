@@ -9,13 +9,8 @@ RUN tar -xf V${STRESS_VER}.tar.gz && \
 	STATIC=1 make -j &&\
 	mv stress-ng /stress-ng/
 
-
-FROM alpine
+FROM benchmark-base
 MAINTAINER Kinvolk
-# dstat
-RUN apk add --update --no-cache py2-six
-COPY --from=dstat-builder /dstat/dstat /usr/local/bin
-COPY --from=dstat-builder /dstat/plugins /usr/local/bin/
+
 # stress-ng
-RUN apk add --update --no-cache util-linux
 COPY --from=builder /stress-ng/stress-ng /sbin/
