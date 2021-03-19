@@ -22,6 +22,9 @@ done
 echo "#############  Building dependencies - dstat ###############"
 docker build -t dstat-builder "${build_root}/dstat"
 
+echo "############# Building base container ###############"
+docker build -t benchmark-base "${build_root}/common"
+
 echo "#############  Building: $targets  ###############"
 
 for t in $targets; do
