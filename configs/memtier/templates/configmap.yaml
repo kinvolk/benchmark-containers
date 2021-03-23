@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: memtier
+data:
+  threads: "{{ .Values.threads }}"
+  type: "{{ .Values.type }}"
+  iterations: "{{ .Values.iterations }}"

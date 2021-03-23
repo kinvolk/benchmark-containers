@@ -50,6 +50,11 @@ parse_params() {
 
 parse_params "$@"
 
+# Parse params according to Config map by Helm chart.
+TYPE="${MEMTIER_TYPE}"
+THREADS=${MEMTIER_THREADS}
+ITERATIONS=${MEMTIER_ITERATIONS}
+
 cd /tmp
 PORT=7000
 
@@ -86,13 +91,39 @@ echo "Using $BENCHMARKPROCESSES processes and $BENCHMARKTHREADS threads for the 
 for I in $(seq 1 $ITERATIONS); do
   WAIT=""
   for P in $(seq 1 $BENCHMARKPROCESSES); do
-    { memtier_benchmark -p "$(( PORT + P ))" -P "$PROTOCOL" -t "$BENCHMARKTHREADS" --test-time 30 --ratio 1:1 -c 25 -x 1 --data-size-range=10240-1048576 --key-pattern S:S  2>&1 | tee /dev/stderr | grep Totals | tail -n 1 | awk '{print $2}' | cut -d . -f 1 > "$P" ; } &
+    { memtier_benchmark -p "$(( PORT + P ))" -P "$PROTOCOL" -t "$BENCHMARKTHREADS" --test-time 30 --ratio 1:1 -c 25 -x 1 --data-size-range=10240-1048576 --key-pattern S:S --json-out-file=$I-$P.json 2>&1 | tee /dev/stderr | grep Totals | tail -n 1 | awk '{print $2}' | cut -d . -f 1 > "$P" ; } &
     WAIT="$WAIT""$! "
   done
   wait $WAIT
   SUM=0
   for P in $(cat $(seq 1 $BENCHMARKPROCESSES)); do
     SUM="$(( SUM + P ))"
+  done
+  # Pushing metrics to pushgateway.
+  for P in $(seq 1 $BENCHMARKPROCESSES); do
+    cat <<EOF | curl --data-binary @- http://pushgateway.monitoring:9091/metrics/job/memtier-benchmark-job/instance/$TYPE
+
+        # TYPE run_information_ gauge
+        $(cat /tmp/$I-$P.json | jq -r '."run information" | to_entries | .[] | "run_information_"+ (.key|ascii_downcase|gsub("\\s";"_")) + " " + (.value|tostring)')
+    
+        # TYPE all_stats_sets_ gauge
+        $(cat /tmp/$I-$P.json | jq -r '."ALL STATS".Sets | to_entries | .[] | "all_stats_sets_"+ (.key|ascii_downcase|gsub("/";"_")) + " " + (.value|tostring)')
+
+        # TYPE all_stats_gets_ gauge
+        $(cat /tmp/$I-$P.json | jq -r '."ALL STATS".Gets | to_entries | .[] | "all_stats_gets_"+ (.key|ascii_downcase|gsub("/";"_")) + " " + (.value|tostring)')
+
+        # TYPE all_stats_waits_ gauge
+        $(cat /tmp/$I-$P.json | jq -r '."ALL STATS".Waits | to_entries | .[] | "all_stats_waits_"+ (.key|ascii_downcase|gsub("/";"_")) + " " + (.value|tostring)')
+            
+        # TYPE all_stats_totals_ gauge
+        $(cat /tmp/$I-$P.json | jq -r '."ALL STATS".Totals | to_entries | .[] | "all_stats_totals_"+ (.key|ascii_downcase|gsub("/";"_")) + " " + (.value|tostring)')
+        
+        # TYPE request_latency_distribution_set gauge
+        $(cat /tmp/$I-$P.json | jq -r '."ALL STATS".SET | .[] | "request_latency_distribution_set{msec=" + "\"" + (."<=msec"|tostring) + "\"" + "}" + " " + (.percent|tostring)')
+
+        # TYPE request_latency_distribution_get gauge
+        $(cat /tmp/$I-$P.json | jq -r '."ALL STATS".GET | .[] | "request_latency_distribution_get{msec=" + "\"" + (."<=msec"|tostring) + "\"" + "}" + " " + (.percent|tostring)')
+EOF
   done
   output_line "$SUM"
 done

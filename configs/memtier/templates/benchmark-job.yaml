@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-memtier-benchmark
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+      containers:
+      - name: run-memtier-benchmark
+        image: knrt10/memtier-testing
+        imagePullPolicy: Always
+        env:
+        # Define the environment variable
+        - name: MEMTIER_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: type
+        - name: MEMTIER_THREADS
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: threads
+        - name: MEMTIER_ITERATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: iterations
+        command:
+        - sh
+        args:
+        - -c
+        - '/usr/local/bin/run-benchmark.sh'
