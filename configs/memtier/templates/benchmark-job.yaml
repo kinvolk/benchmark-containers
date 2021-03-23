@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-memtier-benchmark
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+      containers:
+      - name: run-memtier-benchmark
+        image: knrt10/memtier-testing
+        imagePullPolicy: Always
+        env:
+        - name: MEMTIER_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: type
+        - name: MEMTIER_THREADS
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: threads
+        - name: MEMTIER_ITERATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: iterations
+        - name: PUSHGATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: pushgatewayURL
+        - name: CLOUD
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: cloud
+        - name: INSTANCE
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: instance
+        - name: JOBNAME
+          valueFrom:
+            configMapKeyRef:
+              name: memtier
+              key: jobname
+        command:
+        - sh
+        args:
+        - -c
+        - '/usr/local/bin/run-benchmark.sh'
+      automountServiceAccountToken: false
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- with .Values.tolerations }}
+{{ toYaml . | indent 6 }}
+        {{- end }}
+      {{ end }}
