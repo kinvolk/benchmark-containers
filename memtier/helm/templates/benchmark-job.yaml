@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-memtier-benchmark
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+      containers:
+      - name: run-memtier-benchmark
+        image: quay.io/kinvolk/benchmark-memtier
+        imagePullPolicy: Always
+        env:
+        - name: MEMTIER_TYPE
+          value: "{{ .Values.type }}"
+        - name: MEMTIER_THREADS
+          value: "{{ .Values.threads }}"
+        - name: MEMTIER_ITERATIONS
+          value: "{{ .Values.iterations }}"
+        - name: PUSHGATEWAY_URL
+          value: "{{ .Values.pushgatewayURL }}"
+        - name: CLOUD
+          value: "{{ .Values.cloud }}"
+        - name: INSTANCE
+          value: "{{ .Values.instance }}"
+        - name: JOBNAME
+          value: "{{ .Values.jobname }}"
+        command:
+        - sh
+        args:
+        - -c
+        - /usr/local/bin/run-benchmark.sh
+      automountServiceAccountToken: false
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- with .Values.tolerations }}
+{{ toYaml . | indent 6 }}
+        {{- end }}
+      {{ end }}
