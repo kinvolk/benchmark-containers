@@ -1,0 +1,80 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-mysql-benchmark
+  namespace: mysql
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccount: mysql
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: run-mysql-benchmark
+        image: knrt10/mysql-testing
+        imagePullPolicy: Always
+        securityContext:
+          privileged: true
+          allowPrivilegeEscalation: true
+        env:
+        - name: THREADS
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: threads
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: myqlDatabase
+        - name: MYSQL_ITERATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: iterations
+        - name: PUSHGATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: pushgatewayURL
+        - name: CLOUD
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: cloud
+        - name: INSTANCE
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: instance
+        - name: JOBNAME
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: jobname
+        command:
+        - sh
+        args:
+        - -c
+        - '/usr/local/bin/run-benchmark.sh'
+        volumeMounts:
+        - mountPath: /tmp/
+          name: tmp-dir
+      volumes:
+      # mount in tmp so we can safely use from-scratch images and/or read-only containers
+      - name: tmp-dir
+        emptyDir: {}
+      automountServiceAccountToken: false
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- with .Values.tolerations }}
+{{ toYaml . | indent 6 }}
+        {{- end }}
+      {{ end }}
