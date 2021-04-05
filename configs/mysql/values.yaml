@@ -1,0 +1,3 @@
+threads: 1
+myqlDatabase: sbtest
+mysqlIterations: 1

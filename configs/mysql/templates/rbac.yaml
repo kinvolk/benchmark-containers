@@ -1,0 +1,28 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mysql:unpriviledged
+  namespace: mysql
+rules:
+- apiGroups:
+  - policy
+  resourceNames:
+  - mysql-psp
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mysql:mysql:unpriviledged
+  namespace: mysql
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mysql:unpriviledged
+subjects:
+- kind: ServiceAccount
+  name: mysql
+  namespace: mysql

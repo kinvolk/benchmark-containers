@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql
+  namespace: mysql
+data:
+  threads: "{{ .Values.threads }}"
+  myqlDatabase: "{{ .Values.myqlDatabase }}"
+  iterations: "{{ .Values.mysqlIterations }}"

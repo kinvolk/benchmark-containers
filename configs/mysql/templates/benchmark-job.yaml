@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-mysql-benchmark
+  namespace: mysql
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccount: mysql
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: run-mysql-benchmark
+        image: knrt10/mysql-testing
+        imagePullPolicy: Always
+        securityContext:
+          privileged: true
+          allowPrivilegeEscalation: true
+        env:
+        # Define the environment variable
+        - name: THREADS
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: threads
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: myqlDatabase
+        - name: MYSQL_ITERATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: mysql
+              key: iterations
+        command:
+        - sh
+        args:
+        - -c
+        # Todo remove sleep command.
+        - '/usr/local/bin/run-benchmark.sh && sleep 6000000'
+        volumeMounts:
+        - mountPath: /tmp/
+          name: tmp-dir
+      volumes:
+      # mount in tmp so we can safely use from-scratch images and/or read-only containers
+      - name: tmp-dir
+        emptyDir: {}
