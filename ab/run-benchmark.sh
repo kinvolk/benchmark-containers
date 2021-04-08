@@ -69,6 +69,6 @@ PARAMS="connections=$THREADS"
 output_header
 
 for i in $(seq 1 $ITERATIONS); do
-  VALUE=$(ab -c $THREADS -t 30 -n 999999999 http://$TARGET:8000/ 2>&1 | tee /dev/stderr | grep 'Requests per second' | awk '{print $4}')
+  VALUE=$(ab -c $THREADS -t 30 -n 99999999 http://$TARGET:8000/ 2>&1 | tee /dev/stderr | grep 'Requests per second' | awk '{print $4}')
   output_line "$VALUE"
 done
