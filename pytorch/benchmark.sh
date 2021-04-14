@@ -47,7 +47,7 @@ while [ $# -gt 0 ]; do
         -d) debug_stdout="true"; shift;;
         -n) do_post="false"; shift;;
         -p) shift; pgw="$1"; shift;;
-        -k) shift; test_filters="-k $1"; shift;;
+        -k) shift; test_filters=(-k "$1"); shift;;
         -c) shift; force_cpus="$1"; shift;;
         *) [ -z "$cloud" ] && { cloud="$1"; shift; continue; }
            [ -z "$instance" ] && { instance="$1"; shift; continue; }
@@ -63,7 +63,7 @@ done
 jobname="pytorch"
 ts=$(date --rfc-3339 seconds | sed -e 's/ /__/' -e 's/+.*//')
 
-echo "#### Running pytorch benchmark '$ts' on cloud '$cloud' shape '$instance' w/ filters:'$test_filters'"
+echo "#### Running pytorch benchmark '$ts' on cloud '$cloud' shape '$instance' w/ filters:'${test_filters[@]}'"
 
 function push_to_gw() {
     local body=$(mktemp)
@@ -87,7 +87,7 @@ function push_to_gw() {
 function list_benchmarks() {
     echo "# TYPE pytorch_benchmark_status counter"
     ./run.sh --color=no --cpu_only --benchmark-warmup=on --ignore_machine_config \
-             --benchmark-only --collect-only $test_filters 2>/dev/null \
+             --benchmark-only --collect-only "${test_filters[@]}" 2>/dev/null \
     | awk '
          /<Function test_/ {
              phase = gensub(/.*Function test_(.*)\[.*/,"\\1",1)
@@ -150,7 +150,7 @@ function run_benchmark() {
     local done="false"
 
     taskset --cpu-list "$tset" ./run.sh --color=no --cpu_only --benchmark-warmup=on --ignore_machine_config \
-             --benchmark-only $test_filters 2>/dev/null \
+             --benchmark-only "${test_filters[@]}" 2>/dev/null \
         | unbuffer -p tee "$resfile" \
         | unbuffer -p sed -n 's/.*test_\(train\|eval\)\[\([^]]\+\)\]/\1 \2/p' \
         | while read phase test status rest; do
