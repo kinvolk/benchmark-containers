@@ -5,6 +5,8 @@ This container provides the [pytorch](https://github.com/pytorch/benchmark) mach
 A convenience wrapper script, `benchmark.sh` is supplied for ease of use. The convenience script supports feeding progress and result metrics to a Prometheus [pushgateway](https://github.com/prometheus/pushgateway). A dashboard displaying progress and results is also provided.
 
 
+![Pytorch Grafana dashboard screenshot](pytorch-grafana.png "Pytorch benchmark Grafana dashboard")
+
 ## Building the image
 ```shell
 $ docker build -t pytorch .
