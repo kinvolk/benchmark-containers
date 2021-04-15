@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pytorch-benchmark
+  namespace: {{.Release.Namespace}}
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: pytorch-benchmark
+        image: {{.Values.image}} 
+        args:
+        - {{.Values.cloud}}
+        - {{.Values.instance}}
+        - -d
+        {{- if .Values.numCpus }}
+        - -c
+        - {{.Values.numCPUs}}
+        {{- end }}
+        {{- if .Values.customPushgwURL}}
+        - -p
+        - {{.Values.customPushgwURL}}
+        {{- end }}
+        {{- if .Values.filterTests}}
+        - -k
+        - {{.Values.filterTests}}
+        {{- end }}
+      serviceAccountName: pytorch-benchmark
+      automountServiceAccountToken: false
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- with .Values.tolerations }}
+{{ toYaml . | indent 6 }}
+        {{- end }}
+      {{ end }}

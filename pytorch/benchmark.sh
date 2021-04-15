@@ -19,7 +19,7 @@ usage() {
     echo " -d                - dump pushgateway input to stdout too"
     echo " -p <push-gateway> - URL of prometheus push gateway. Default: $pgw"
     echo " -n                - Do not post to pushgateway. Useful with -d."
-    echo " -k                - Only run specific tests; see https://github.com/pytorch/benchmark#examples-of-benchmark-filters."
+    echo " -k <filter-exp>   - Only run specific tests; see https://github.com/pytorch/benchmark#examples-of-benchmark-filters."
     echo " -c <num cpus>     - Force a number of CPUs to use (must not be higher than CPUs available)."
     echo "                     By default the benchmark will use all CPUs available."
     echo

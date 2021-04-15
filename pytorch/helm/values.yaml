@@ -1,0 +1,29 @@
+#    Deployment options and parameters
+#    Set these to your cloud vendor and your instance size
+cloud: demo
+instance: demo
+
+#    Container image to use (including architecture)
+#    - quay.io/kinvolk/pytorch-benchmark:v1-amd64
+#    - quay.io/kinvolk/pytorch-benchmark:v1-arm64
+image: quay.io/kinvolk/pytorch-benchmark:v1-amd64
+
+#    Default filter set for train&eval with summary metrics, see README.md
+#    Additionally, mobilenet_v2_quantized_qat-cpu-eager was removed because evaluation fails on ARM.
+filterTests: not Background_Matting and not Super_SloMo and not dlrm-cpu-jit and not maml-cpu-jit and not mobilenet_v2_quantized_qat-cpu-jit and not mobilenet_v2_quantized_qat-cpu-eager and not moco and not pyhpc and not pytorch_CycleGAN_and_pix2pix and not tacotron2 and not yolov3
+
+#    Defaults to all CPUs available
+# numCpus: 12
+
+#    Defaults to http://monitoring.pushgateway:9091/
+# customPushgwURL: http://some.other.cluster:12345/
+
+# nodeSelector:
+#   role: benchmark
+
+# tolerations:
+# - key: role
+#   operator: Equal
+#   value: benchmark
+#   effect: NoSchedule
+
