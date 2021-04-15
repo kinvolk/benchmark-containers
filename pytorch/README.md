@@ -35,3 +35,34 @@ $ docker run -ti pytorch my-cloud my-instance-name
 #### Test LearningToPaint-cpu-jit phase eval PASSED (2)
 ...
 ```
+
+## Recommended tests
+
+Some tests do not emit result metrics; it is recommended to exclude these using the `-k` option. Including these tests will significantly increase overall benchmark runtime without changing any of the results metrics in the Grafana dashboard, since the dashboard is based on the results output.
+
+The tests without summary metrics are:
+* Background_Matting (no training or eval summaries)
+* Super_SloMo (no training or eval summaries)
+* dlrm-cpu-jit (the "eager" test emits summary metrics; jit has neither training nor eval)
+* maml-cpu-jit (the "eager" test emits summary metrics; jit has neither training nor eval)
+* mobilenet_v2_quantized_qat-jit (the "eager" test emits summary metrics; jit has neither training nor eval)
+* moco (no training or eval summaries)
+* pyhpc (no training summaries)
+* pytorch_CycleGAN_and_pix2pix (no training or eval summaries)
+* tacotron2 (no training or eval summaries)
+* yolov3 (no training summaries)
+
+### Benchmark train and eval
+
+Example `-k` option usage for excluding the tests above:
+```shell
+$ docker run -ti pytorch my-cloud my-instance-name -k 'not Background_Matting and not Super_SloMo and not dlrm-cpu-jit and not maml-cpu-jit and not mobilenet_v2_quantized_qat-jit and not moco and not pyhpc and not pytorch_CycleGAN_and_pix2pix and not tacotron2 and not yolov3'
+```
+
+### Benchmark eval only
+
+If we only want to benchmark evaluation, we can include tests that emit eval metrics (but no training metrics). Example `-k` options usage:
+```shell
+$ docker run -ti pytorch my-cloud my-instance-name -k 'not test_train and not Background_Matting and not Super_SloMo and not dlrm-cpu-jit and not maml-cpu-jit and not mobilenet_v2_quantized_qat-jit and not moco and not pytorch_CycleGAN_and_pix2pix and not tacotron2'
+```
+
