@@ -3,10 +3,8 @@
 cloud: demo
 instance: demo
 
-#    Container image to use (including architecture)
-#    - quay.io/kinvolk/pytorch-benchmark:v1-amd64
-#    - quay.io/kinvolk/pytorch-benchmark:v1-arm64
-image: quay.io/kinvolk/pytorch-benchmark:v1-amd64
+#    Container image to use
+image: quay.io/kinvolk/pytorch-benchmark:v2
 
 #    Default filter set for train&eval with summary metrics, see README.md
 #    Additionally, mobilenet_v2_quantized_qat-cpu-eager was removed because evaluation fails on ARM.
