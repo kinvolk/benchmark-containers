@@ -12,6 +12,7 @@ RUN dnf install -y \
         protobuf-devel \
         llvm7.0-devel \
         redhat-rpm-config \
+        expect \
         libGL
 
 RUN cd && \
@@ -60,6 +61,7 @@ RUN cd && \
     cd && \
     git clone https://github.com/pytorch/benchmark.git && \
         cd benchmark/ && \
+        git checkout 0ca849dabc5699dd49bedd6044d91d920ebf8cab && \
         sed -i '/^numba/d' torchbenchmark/models/tacotron2/requirements.txt && \
         python install.py -v && \
     echo -e '[pytest]\nconsole_output_style=progress\nlog_cli=true' > pytest.ini && \
@@ -67,5 +69,6 @@ RUN cd && \
     pip install numpy
 
 COPY run.sh /root/benchmark/
+COPY benchmark.sh /root/benchmark
 
-ENTRYPOINT [ "/root/benchmark/run.sh" ]
+ENTRYPOINT [ "/root/benchmark/benchmark.sh" ]

@@ -1,0 +1,767 @@
+{
+  "meta": {
+    "type": "db",
+    "canSave": true,
+    "canEdit": true,
+    "canAdmin": true,
+    "canStar": true,
+    "slug": "pytorch",
+    "expires": "0001-01-01T00:00:00Z",
+    "created": "2021-04-13T11:43:04Z",
+    "updated": "2021-04-14T11:28:49Z",
+    "updatedBy": "admin",
+    "createdBy": "admin",
+    "version": 23,
+    "hasAcl": false,
+    "isFolder": false,
+    "folderId": 0,
+    "folderTitle": "General",
+    "folderUrl": "",
+    "provisioned": false,
+    "provisionedExternalId": ""
+  },
+  "dashboard": {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": 25,
+    "iteration": 1618398488061,
+    "links": [],
+    "panels": [
+      {
+        "datasource": null,
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 4,
+          "x": 0,
+          "y": 0
+        },
+        "id": 11,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "value_and_name"
+        },
+        "pluginVersion": "7.2.1",
+        "targets": [
+          {
+            "expr": "pytorch_benchmark_cpus{cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\"}",
+            "interval": "",
+            "legendFormat": "CPU count (task set {{taskset}})",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "",
+        "type": "stat"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": null,
+              "filterable": false
+            },
+            "mappings": [
+              {
+                "from": "-1",
+                "id": 1,
+                "text": "n/a",
+                "to": "-99999",
+                "type": 1,
+                "value": "0"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 10,
+          "x": 4,
+          "y": 0
+        },
+        "id": 8,
+        "options": {
+          "displayMode": "gradient",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "7.2.1",
+        "targets": [
+          {
+            "expr": "sum(pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"})",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "OPS",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"mean\"})",
+            "interval": "",
+            "legendFormat": "Sum of all  tests' mean runtimes",
+            "refId": "B"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Training phase",
+        "transformations": [],
+        "type": "bargauge"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": null,
+              "filterable": false
+            },
+            "mappings": [
+              {
+                "from": "",
+                "id": 1,
+                "text": "n/a",
+                "to": "",
+                "type": 1,
+                "value": "0"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 10,
+          "x": 14,
+          "y": 0
+        },
+        "id": 7,
+        "options": {
+          "displayMode": "gradient",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "7.2.1",
+        "targets": [
+          {
+            "expr": "sum(pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"})",
+            "interval": "",
+            "legendFormat": "OPS",
+            "refId": "C"
+          },
+          {
+            "expr": "sum(pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"mean\"})",
+            "interval": "",
+            "legendFormat": "Sum of all  tests' mean runtimes",
+            "refId": "D"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Evaluation phase",
+        "transformations": [],
+        "type": "bargauge"
+      },
+      {
+        "datasource": "Prometheus",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": null,
+              "displayMode": "auto",
+              "filterable": false
+            },
+            "mappings": [
+              {
+                "from": "0",
+                "id": 1,
+                "text": "Waiting",
+                "to": "1",
+                "type": 1,
+                "value": "0"
+              },
+              {
+                "from": "",
+                "id": 2,
+                "text": "Training passed",
+                "to": "",
+                "type": 1,
+                "value": "1"
+              },
+              {
+                "from": "",
+                "id": 3,
+                "text": "Eval passed",
+                "to": "",
+                "type": 1,
+                "value": "2"
+              },
+              {
+                "from": "",
+                "id": 4,
+                "text": "Training FAILED",
+                "to": "",
+                "type": 1,
+                "value": "11"
+              },
+              {
+                "from": "",
+                "id": 5,
+                "text": "Eval FAILED",
+                "to": "",
+                "type": 1,
+                "value": "12"
+              },
+              {
+                "from": "",
+                "id": 6,
+                "text": "Test ERROR",
+                "to": "",
+                "type": 1,
+                "value": "13"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "rgb(255, 255, 255)",
+                  "value": null
+                },
+                {
+                  "color": "semi-dark-green",
+                  "value": 0.5
+                },
+                {
+                  "color": "blue",
+                  "value": 1.5
+                },
+                {
+                  "color": "dark-red",
+                  "value": 10
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 26,
+          "w": 4,
+          "x": 0,
+          "y": 3
+        },
+        "id": 2,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "limit": 5000,
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "7.2.1",
+        "targets": [
+          {
+            "expr": "pytorch_benchmark_status{cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\"}",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{tshort}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Pytorch tests progress",
+        "type": "stat"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [
+              {
+                "from": "",
+                "id": 1,
+                "text": "n/a",
+                "to": "",
+                "type": 1,
+                "value": "0"
+              }
+            ],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "super-light-green",
+                  "value": null
+                },
+                {
+                  "color": "light-green",
+                  "value": 0
+                },
+                {
+                  "color": "dark-red",
+                  "value": 500
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 26,
+          "w": 5,
+          "x": 4,
+          "y": 3
+        },
+        "id": 4,
+        "options": {
+          "displayMode": "lcd",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "7.2.1",
+        "targets": [
+          {
+            "expr": "pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"median\"}",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{test}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Median training time",
+        "type": "bargauge"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [
+              {
+                "from": "",
+                "id": 1,
+                "text": "n/a",
+                "to": "",
+                "type": 1,
+                "value": "0"
+              }
+            ],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "super-light-green",
+                  "value": null
+                },
+                {
+                  "color": "light-green",
+                  "value": 0
+                },
+                {
+                  "color": "dark-red",
+                  "value": 500
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 26,
+          "w": 5,
+          "x": 9,
+          "y": 3
+        },
+        "id": 9,
+        "options": {
+          "displayMode": "lcd",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "7.2.1",
+        "targets": [
+          {
+            "expr": "pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"}",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{test}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Training OPS",
+        "type": "bargauge"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [
+              {
+                "from": "",
+                "id": 1,
+                "text": "n/a",
+                "to": "",
+                "type": 1,
+                "value": "0"
+              }
+            ],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "super-light-green",
+                  "value": null
+                },
+                {
+                  "color": "light-green",
+                  "value": 0
+                },
+                {
+                  "color": "dark-red",
+                  "value": 100
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 26,
+          "w": 5,
+          "x": 14,
+          "y": 3
+        },
+        "id": 5,
+        "options": {
+          "displayMode": "lcd",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "7.2.1",
+        "targets": [
+          {
+            "expr": "pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"median\"}",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{test}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Median eval time",
+        "type": "bargauge"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [
+              {
+                "from": "",
+                "id": 1,
+                "text": "n/a",
+                "to": "",
+                "type": 1,
+                "value": "0"
+              }
+            ],
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "super-light-green",
+                  "value": null
+                },
+                {
+                  "color": "light-green",
+                  "value": 0
+                },
+                {
+                  "color": "dark-red",
+                  "value": 100
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 26,
+          "w": 5,
+          "x": 19,
+          "y": 3
+        },
+        "id": 12,
+        "options": {
+          "displayMode": "lcd",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true
+        },
+        "pluginVersion": "7.2.1",
+        "targets": [
+          {
+            "expr": "pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"}",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{test}}",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Eval OPS",
+        "type": "bargauge"
+      }
+    ],
+    "refresh": "5s",
+    "schemaVersion": 26,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "allValue": null,
+          "current": {
+            "selected": true,
+            "text": [
+              "OCI"
+            ],
+            "value": [
+              "OCI"
+            ]
+          },
+          "datasource": "Prometheus",
+          "definition": "pytorch_benchmark_status",
+          "hide": 0,
+          "includeAll": false,
+          "label": null,
+          "multi": false,
+          "name": "cloud",
+          "options": [],
+          "query": "pytorch_benchmark_status",
+          "refresh": 2,
+          "regex": "/.*cloud=\\\"([^\\\"]*).*/",
+          "skipUrlSync": false,
+          "sort": 0,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "allValue": null,
+          "current": {
+            "selected": false,
+            "text": "virtual_4core",
+            "value": "virtual_4core"
+          },
+          "datasource": "Prometheus",
+          "definition": "pytorch_benchmark_status{cloud=\"$cloud\"}",
+          "hide": 0,
+          "includeAll": false,
+          "label": null,
+          "multi": false,
+          "name": "shape",
+          "options": [],
+          "query": "pytorch_benchmark_status{cloud=\"$cloud\"}",
+          "refresh": 2,
+          "regex": "/.*exported_instance=\\\"([^\\\"]*).*/",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "allValue": null,
+          "current": {
+            "selected": false,
+            "text": "2021-04-13__11:55:10",
+            "value": "2021-04-13__11:55:10"
+          },
+          "datasource": "Prometheus",
+          "definition": "pytorch_benchmark_status{cloud=\"$cloud\",exported_instance=\"$shape\"}",
+          "hide": 0,
+          "includeAll": false,
+          "label": null,
+          "multi": false,
+          "name": "run",
+          "options": [],
+          "query": "pytorch_benchmark_status{cloud=\"$cloud\",exported_instance=\"$shape\"}",
+          "refresh": 2,
+          "regex": "/.*run=\\\"([^\\\"]*).*/",
+          "skipUrlSync": false,
+          "sort": 2,
+          "tagValuesQuery": "",
+          "tags": [],
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        }
+      ]
+    },
+    "time": {
+      "from": "now-5m",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ]
+    },
+    "timezone": "",
+    "title": "pytorch",
+    "uid": null,
+    "version": 23
+  }
+}
