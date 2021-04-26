@@ -1,0 +1,16 @@
+threads: 1
+connections: 400
+duration: "10s"
+nginxIterations: 1
+pushgatewayURL: http://pushgateway.monitoring:9091
+cloud: em
+instance: z3.cpu
+jobname: nginx-benchmark-job
+# nodeSelector:
+#   role: benchmark
+
+# tolerations:
+# - key: role
+#   operator: Equal
+#   value: benchmark
+#   effect: NoSchedule

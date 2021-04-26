@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-nginx-benchmark
+  namespace: {{.Release.Namespace}}
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccount: nginx
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: run-nginx-benchmark
+        image: quay.io/kinvolk/benchmark-nginx
+        imagePullPolicy: Always
+        env:
+        - name: NGINX_ITERATIONS
+          value: "{{ .Values.nginxIterations }}"
+        - name: THREADS
+          value: "{{ .Values.threads }}"
+        - name: CONNECTIONS
+          value: "{{ .Values.connections }}"
+        - name: DURATION
+          value: "{{ .Values.duration }}"
+        - name: PUSHGATEWAY_URL
+          value: "{{ .Values.pushgatewayURL }}"
+        - name: CLOUD
+          value: "{{ .Values.cloud }}"
+        - name: INSTANCE
+          value: "{{ .Values.instance }}"
+        - name: JOBNAME
+          value: "{{ .Values.jobname }}"
+        command:
+        - sh
+        args:
+        - -c
+        - '/usr/local/bin/run-benchmark.sh'
+      automountServiceAccountToken: false
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- with .Values.tolerations }}
+{{ toYaml . | indent 6 }}
+        {{- end }}
+      {{ end }}
