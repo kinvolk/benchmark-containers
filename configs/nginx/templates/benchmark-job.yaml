@@ -1,0 +1,75 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-nginx-benchmark
+  namespace: nginx
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccount: nginx
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: run-nginx-benchmark
+        image: knrt10/nginx-testing
+        imagePullPolicy: Always
+        env:
+        - name: NGINX_ITERATIONS
+          valueFrom:
+            configMapKeyRef:
+              name: nginx
+              key: nginxIterations
+        - name: THREADS
+          valueFrom:
+            configMapKeyRef:
+              name: nginx
+              key: threads
+        - name: CONNECTIONS
+          valueFrom:
+            configMapKeyRef:
+              name: nginx
+              key: connections
+        - name: DURATION
+          valueFrom:
+            configMapKeyRef:
+              name: nginx
+              key: duration
+        - name: PUSHGATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: nginx
+              key: pushgatewayURL
+        - name: CLOUD
+          valueFrom:
+            configMapKeyRef:
+              name: nginx
+              key: cloud
+        - name: INSTANCE
+          valueFrom:
+            configMapKeyRef:
+              name: nginx
+              key: instance
+        - name: JOBNAME
+          valueFrom:
+            configMapKeyRef:
+              name: nginx
+              key: jobname
+        command:
+        - sh
+        args:
+        - -c
+        - '/usr/local/bin/run-benchmark.sh'
+      automountServiceAccountToken: false
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- with .Values.tolerations }}
+{{ toYaml . | indent 6 }}
+        {{- end }}
+      {{ end }}

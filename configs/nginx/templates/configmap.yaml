@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx
+  namespace: nginx
+data:
+  threads: "{{ .Values.threads }}"
+  connections: "{{ .Values.connections }}"
+  duration: "{{ .Values.duration }}"
+  nginxIterations: "{{ .Values.nginxIterations }}"
+  pushgatewayURL: "{{ .Values.pushgatewayURL }}"
+  cloud: "{{ .Values.cloud }}"
+  instance: "{{ .Values.instance }}"
+  jobname: "{{ .Values.jobname }}"
