@@ -1,0 +1,5 @@
+tolerations:
+- key: role
+  operator: Equal
+  value: benchmark
+  effect: NoSchedule
