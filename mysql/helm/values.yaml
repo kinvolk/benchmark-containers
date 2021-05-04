@@ -1,0 +1,15 @@
+threads: 1
+myqlDatabase: sbtest
+mysqlIterations: 1
+pushgatewayURL: http://pushgateway.monitoring:9091
+cloud: em
+instance: u1.mem
+jobname: mysql-benchmark-job
+# nodeSelector:
+#   role: benchmark
+
+# tolerations:
+# - key: role
+#   operator: Equal
+#   value: benchmark
+#   effect: NoSchedule
