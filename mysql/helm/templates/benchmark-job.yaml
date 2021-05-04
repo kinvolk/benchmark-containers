@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: run-mysql-benchmark
-  namespace: mysql
+  namespace: {{.Release.Namespace}}
 spec:
   template:
     spec:
