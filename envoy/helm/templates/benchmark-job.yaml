@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-envoy-benchmark
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: run-envoy-benchmark
+spec:
+  template:
+    metadata:
+      labels:
+        app: run-envoy-benchmark
+    spec:
+      restartPolicy: OnFailure
+      volumes:
+      - name: tempfs
+        emptyDir:
+          medium: Memory
+      serviceAccount: envoy
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: run-envoy-benchmark
+        image: quay.io/kinvolk/benchmark-envoy
+        imagePullPolicy: Always
+        securityContext:
+          privileged: true
+          allowPrivilegeEscalation: true
+        volumeMounts:
+        - name: tempfs
+          mountPath: "/tmpfs"
+        env:
+        - name: PUSHGATEWAY_URL
+          value: "{{ .Values.pushgatewayURL }}"
+        - name: CLOUD
+          value: "{{ .Values.cloud }}"
+        - name: INSTANCE
+          value: "{{ .Values.instance }}"
+        - name: JOBNAME
+          value: "{{ .Values.jobname }}"
+        command:
+        - sh
+        args:
+        - /usr/local/bin/prometheus-export-wrapper
+        - -c
+        - "{{.Values.benchmark.connections}}"
+        - -d
+        - "{{.Values.benchmark.duration}}"
+        - -r
+        - "{{.Values.benchmark.RPS}}"
+        - -i
+        - "{{.Values.benchmark.initDelay}}" 
+        - http://{{ .Values.service.name }}:9901/
+      automountServiceAccountToken: false
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{- with .Values.tolerations }}
+{{ toYaml . | indent 6 }}
+        {{- end }}
+      {{ end }}

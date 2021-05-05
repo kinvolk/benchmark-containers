@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    app: {{ .Values.service.name }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: admin
+    port: 9901
+    targetPort: 9901
+    protocol: TCP
+  - name: http
+    port: 10000
+    targetPort: 10000
+    protocol: TCP
+  selector:
+    app: {{ .Values.service.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    app: {{ .Values.service.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      serviceAccount: envoy
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: {{ .Values.service.name }}
+        image: envoyproxy/envoy-dev:338b7b742cc6df1c807cb29d5a8c4027f46f93bd
+        imagePullPolicy: Always
+        env:
+        ports:
+        - name: admin
+          containerPort: 9901
+        - name: http
+          containerPort: 10000

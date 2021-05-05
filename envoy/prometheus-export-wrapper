@@ -1,0 +1,526 @@
+#!/bin/ash
+#
+# Wrapper script around wrk service mesh benchmark
+#  for data export to Prometheus push GW
+#
+
+conn=10
+rps=10
+dur=60
+init_delay=0
+job_name=${JOBNAME}
+cloud=${CLOUD}
+instance=${INSTANCE}
+pushgateway_url=${PUSHGATEWAY_URL}
+pgw="${pushgateway_url}/metrics/job/${job_name}/cloud/${cloud}/instance/${instance}"
+
+usage() {
+    echo "Usage:"
+    echo "  docker run -ti quay.io/kinvolk/wrk2-srvmesh-bench \\"
+    echo "        [-c <num-of-concurrent-connections>] \\"
+    echo "        [-r <num-of-requests-per-second>] \\"
+    echo "        [-d <duration>] \\"
+    echo "        [-p <push-gateway>] \\"
+    echo "     http[s]://>service-1>/<endpoint-1> \\"
+    echo "     http[s]://>service-1>/<endpoint-2> \\"
+    echo "     http[s]://>service-2>/<endpoint-1> \\"
+    echo "     http[s]://>service-2>/<endpoint-2> \\"
+    echo "        ..."
+    echo
+    echo " -c <connections> - Number of concurrent connections. Default: $conn"
+    echo " -r <rps> - Target rate of requests per second. Default: $rps"
+    echo " -d <duration> - Test duration in seconds. Default: $dur"
+    echo " -i <duration> - Initial delay (sleep time before start) in seconds"
+    echo "                 Default: $init_delay"
+    echo " -p <push-gateway> - URL of prometheus push gateway. Default: $pgw"
+    echo "                     Use 'stdout' to just print to standard output."
+    echo "                     Use 'null' to suppress output (for debugging)."
+    echo
+}
+
+# --
+
+[ -z "$1" -o "help" = "$1" -o "-h" = "$1" -o "--help" = "$1" ] && {
+    usage
+    exit 0
+}
+
+servers=""
+
+i=1; next=""
+for arg do
+    [ "$arg" = "-c" ] &&  { next="conn"; continue; }
+    [ "$arg" = "-r" ] &&  { next="rps"; continue; }
+    [ "$arg" = "-d" ] &&  { next="dur"; continue; }
+    [ "$arg" = "-p" ] &&  { next="pgw"; continue; }
+    [ "$arg" = "-i" ] &&  { next="init_delay"; continue; }
+
+    [ -n "$next" ] && { eval $next="$arg"; next=""; continue; }
+
+    servers="$servers $arg"
+done
+
+[ $init_delay -ne 0 ] && {
+    echo "Init delay: sleeping for $init_delay seconds."
+    sleep "$init_delay"
+    echo "Slept well, now starting benchmark"
+}
+
+# set up CURL command to push to Prometheus
+if [ "$pgw" = "stdout" ] ; then
+    curl_pgw="cat -"
+elif [ "$pgw" = "null" ] ; then
+    curl_pgw="true"
+else
+    # Add RPS to URL
+    ts=$(date -Iseconds | sed -e 's/T/__/' -e 's/+.*//')
+    curl_pgw="curl -s --data-binary @- $pgw/run/$ts"
+
+    # check if gateway is available, retry a few times
+    n=0
+    until [ "$n" -ge 10 ]
+    do
+        echo -e "# TYPE wrk2_benchmark_progress counter\nwrk2_benchmark_progress 0" \
+            | $curl_pgw && break
+        n=$((n+1))
+        sleep 2
+        echo "retrying POSTing to prometheus push gateway..."
+    done
+
+    echo -e "# TYPE wrk2_benchmark_progress counter\nwrk2_benchmark_progress 0" \
+        | $curl_pgw
+
+    if [ $? -ne 0 ]; then
+        echo
+        echo "ERROR posting to prometheus push gateway $pgw"
+        echo
+        usage
+        echo
+        echo "Aborting due to errors."
+        exit 1
+    fi
+fi
+export curl_pgw
+
+duration_mul=$(echo "$dur" \
+                   | awk '/s$/{print "1"} /m$/{print "60"} /h$/{print "3600"}')
+[ -z "$duration_mul" ] && duration_mul=1
+duration_val=$(echo "$dur" | sed 's/[^0-9]\+//g')
+duration_s=$(( $duration_val * $duration_mul ))
+
+echo
+echo "Running stresser with:"
+echo "   conn: $conn"
+echo "   rps: $rps"
+echo "   duration: $dur ($duration_s s)"
+echo "   prometheus push-gateway: $pgw"
+echo "   servers: $servers"
+echo
+
+sleep 1
+
+# we use files to exchange per-thread matrics; use ram-backed fs for this file
+# I/O to prevent threads being stuck in IOWAIT
+cd /tmpfs
+
+
+# ---------------------
+
+get_cpuinfo() {
+    lscpu \
+        | awk '
+           /Thread\(s\) per core:/ {tps=$4}
+           /Core\(s\) per socket:/ {c=$4}
+           /Socket\(s\):/ {s=$2}
+           END{
+            print "# TYPE wrk2_benchmark_node_cpuinfo gauge"
+            print "wrk2_benchmark_node_cpuinfo{info=\"cores\"} " c*s
+            print "wrk2_benchmark_node_cpuinfo{info=\"threads\"} " c*s*tps
+           }'
+}
+# --
+
+get_cpuclock() {
+    lscpu \
+        | awk '
+            /CPU MHz:/{curr=$3}
+            /CPU max MHz:/{max=$4}
+            END{
+            print "# TYPE wrk2_benchmark_node_cpuclock gauge"
+            print "wrk2_benchmark_node_cpuclock{kind=\"current\"} " curr
+            print "wrk2_benchmark_node_cpuclock{kind=\"max\"} " max }'
+}
+# --
+
+get_loadavg() {
+    local cores="$1"
+    local threads="$2"
+    uptime \
+        | awk -v cores="$cores" -v threads="$threads" ' {
+            load=gensub( /.*load average: ([0-9.]+), ([0-9.]+), ([0-9.]+)/ ,"\\1 \\2 \\3", "g")
+            split(load, al, " ")
+            print "# TYPE wrk2_benchmark_node_loadavg gauge"
+            print "wrk2_benchmark_node_loadavg{interval=\"1m\",kind=\"raw\"} " al[1]
+            print "wrk2_benchmark_node_loadavg{interval=\"5m\",kind=\"raw\"} " al[2]
+            print "wrk2_benchmark_node_loadavg{interval=\"15m\",kind=\"raw\"} " al[3]
+            print "wrk2_benchmark_node_loadavg{interval=\"1m\",kind=\"per_core\"} " (al[1] + 0.0) / (cores + 0.0)
+            print "wrk2_benchmark_node_loadavg{interval=\"5m\",kind=\"per_core\"} " (al[2] + 0.0) / (cores + 0.0)
+            print "wrk2_benchmark_node_loadavg{interval=\"15m\",kind=\"per_core\"} " (al[3] + 0.0) / (cores + 0.0)
+            print "wrk2_benchmark_node_loadavg{interval=\"1m\",kind=\"per_thread\"} " (al[1] + 0.0) / (threads + 0.0)
+            print "wrk2_benchmark_node_loadavg{interval=\"5m\",kind=\"per_thread\"} " (al[2] + 0.0) / (threads + 0.0)
+            print "wrk2_benchmark_node_loadavg{interval=\"15m\",kind=\"per_thread\"} " (al[3] + 0.0) / (threads + 0.0) }'
+}
+# --
+
+get_meminfo() {
+    free \
+        | awk ' /^Mem:/{
+            print "# TYPE wrk2_benchmark_node_meminfo gauge"
+            print "wrk2_benchmark_node_meminfo{kind=\"total\"} " $2
+            print "wrk2_benchmark_node_meminfo{kind=\"used\"} " $3
+            print "wrk2_benchmark_node_meminfo{kind=\"free\"} " $4
+            print "wrk2_benchmark_node_meminfo{kind=\"shared\"} " $5
+            print "wrk2_benchmark_node_meminfo{kind=\"cache\"} " $6
+            print "wrk2_benchmark_node_meminfo{kind=\"available\"} " $7 }
+                /^Swap:/{
+            print "# TYPE wrk2_benchmark_node_swapinfo gauge"
+            print "wrk2_benchmark_node_swapinfo{kind=\"total\"} " $2
+            print "wrk2_benchmark_node_swapinfo{kind=\"used\"} " $3
+            print "wrk2_benchmark_node_swapinfo{kind=\"free\"} " $4 }'
+}
+# --
+
+prometheus_pusher() {
+    local num_threads="$1"
+    local req_rps="$2"
+    local duration="$3"
+    local curl_pgw="$4"
+
+    local cpuinfo=$(get_cpuinfo)
+    local threads=$(get_cpuinfo | grep '{info="threads"}' | sed 's/.*} //')
+    local cores=$(get_cpuinfo | grep '{info="cores"}' | sed 's/.*} //')
+
+    local cpuclock=$(get_cpuclock)
+    local loadavg=$(get_loadavg "$cores" "$threads")
+    local meminfo=$(get_meminfo)
+
+    local iter=0
+    local init=1
+
+    local start_ts=""
+    local last_load_report=$(date +%s)
+
+    while [ ! -f "benchmark-end.txt" ] ; do
+        now=$(date +%s)
+        # update load stats every 10s
+        if [ $(($now - $last_load_report)) -ge 10 ] ; then
+            cpuclock=$(get_cpuclock)
+            loadavg=$(get_loadavg "$cores" "$threads")
+            meminfo=$(get_meminfo)
+            cat << EOF | $curl_pgw
+${cpuinfo}
+${cpuclock}
+${loadavg}
+${meminfo}
+EOF
+            last_load_report=$now
+        fi
+
+        mcount=$(ls -1 thread-*_seq-${iter}.txt 2>/dev/null | wc -l)
+
+        # wrk2 still initialising?
+        [ $init -eq 1 ] && {
+            grep -E \
+                  '^Initialised [0-9]+ threads in [0-9]+ ms.' stats 2>/dev/null
+            if [ $? -ne 0 ] ; then
+                init_progress=$(($mcount * 100 / num_threads))
+                cat << EOF | $curl_pgw
+# TYPE wrk2_benchmark_progress counter
+wrk2_benchmark_progress{status="init"} $init_progress
+EOF
+                echo "INIT Progress: $init_progress% , ${mcount} / ${num_threads} threads"
+                sleep 1
+                continue
+            else
+                init=0
+                cat << EOF | $curl_pgw
+# TYPE wrk2_benchmark_progress counter
+wrk2_benchmark_progress{status="init"} 100
+wrk2_benchmark_progress{status="run"} 0
+EOF
+                start_ts=$now
+            fi
+        }
+
+        # wait until all threads reported for this iteration
+        [ $mcount -lt $num_threads ] && {
+            sleep 0.01 # yield CPU
+            continue; }
+
+        runtime=$(($now - $start_ts))
+        progress=$(($runtime * 100 / $duration))
+        [ $progress -gt 100 ] && progress=100
+
+        # runtime info
+        cat << EOF | $curl_pgw
+# TYPE wrk2_benchmark_requests counter
+# TYPE wrk2_benchmark_responses counter
+# TYPE wrk2_benchmark_average_rps gauge
+# TYPE wrk2_benchmark_current_rps gauge
+# TYPE wrk2_benchmark_average_tcp_reconnect_rate gauge
+# TYPE wrk2_benchmark_current_tcp_reconnect_rate gauge
+# TYPE wrk2_benchmark_rgauge
+# TYPE wrk2_benchmark_progress counter
+# TYPE wrk2_benchmark_thread_count counter
+# TYPE wrk2_benchmark_duration counter
+wrk2_benchmark_progress{status="init"} 100
+wrk2_benchmark_progress{status="run"} $progress
+wrk2_benchmark_thread_count $num_threads
+wrk2_benchmark_duration $duration
+$(cat thread-*_seq-${iter}.txt | grep -v 'wrk2_benchmark_run_')
+EOF
+
+        # Results info, pushed after run concluded
+        cat << EOF > wrk2_benchmark_run.txt
+# TYPE wrk2_benchmark_run_average_tcp_reconnect_rate gauge
+$(cat thread-*_seq-${iter}.txt | grep 'wrk2_benchmark_run_')
+$(echo "$loadavg" | sed 's/wrk2_benchmark_node_/wrk2_benchmark_run_node_/')
+EOF
+
+        echo "RUN Progress: $progress% , ${runtime}s / ${duration}s"
+        rm thread-*_seq-${iter}.txt
+        iter=$(($iter+1))
+    done
+
+    echo "All done!"
+}
+
+# ---------------------
+
+start_ts=$(date +%s)
+rm -f thread-*_seq-*.txt "benchmark-end.txt"
+
+prometheus_pusher "$conn" "$rps" "$duration_s" "$curl_pgw" &
+
+# split off first endpoint, generate LUA include file with all endpoints
+# to spped up thread start-up when many endpoints are defined
+first_server=$(echo $servers | sed 's/ .*//g')
+count=0
+echo 'input_endpoints={}' > endpoints.lua
+for e in $servers; do
+    echo "input_endpoints[$count] = \"$e\" " >> endpoints.lua
+    count=$((count+1))
+done
+
+# wait until first endpoint becomes available.
+echo "Waiting for '$first_server' to become available"
+timeout=120
+st=$(date +%s)
+ts="$st"
+while [ $((st + timeout)) -ge $ts ]; do
+    echo "    Trying $first_server (for $((st+timeout-ts)) more seconds) ..."
+    curl -s -m 5 "$first_server" >/dev/null && break
+    ts=$(date +%s)
+    sleep 1
+done
+echo "'$first_server' responded, starting benchmark."
+echo "----"
+echo
+
+unbuffer /usr/local/bin/wrk \
+              -s /usr/local/bin/multiple-endpoints-prometheus-metrics.lua \
+              --lua-dont-pass-body \
+              -L -R "$rps" -c "$conn" -t "$conn" -d "$dur" \
+              $first_server \
+    | unbuffer -p tee stats
+
+> "benchmark-end.txt"
+
+sleep 2
+kill -9 %1
+wait
+
+echo ""
+
+# ---------------------
+
+end_ts=$(date +%s)
+
+# set sum gauges to 0, progress to 100, update wrk2_benchmark_run metrics
+per_thread_info=""
+for i in $(seq $conn); do
+    per_thread_info="wrk2_benchmark_requests{label=\"thread-${i}\"} 0\n$per_thread_info"
+    per_thread_info="wrk2_benchmark_responses{label=\"thread-${i}\"} 0\n$per_thread_info"
+    per_thread_info="wrk2_benchmark_average_rps{label=\"thread-${i}\"} 0\n$per_thread_info"
+    per_thread_info="wrk2_benchmark_current_rps{label=\"thread-${i}\"} 0\n$per_thread_info"
+    per_thread_info="wrk2_benchmark_average_tcp_reconnect_rate{label=\"thread-${i}\"} 0\n$per_thread_info"
+    per_thread_info="wrk2_benchmark_current_tcp_reconnect_rate{label=\"thread-${i}\"} 0\n$per_thread_info"
+done
+
+cat << EOF | $curl_pgw
+# TYPE wrk2_benchmark_requests counter
+# TYPE wrk2_benchmark_responses counter
+# TYPE wrk2_benchmark_average_rps gauge
+# TYPE wrk2_benchmark_current_rps gauge
+# TYPE wrk2_benchmark_average_tcp_reconnect_rate gauge
+# TYPE wrk2_benchmark_current_tcp_reconnect_rate gauge
+# TYPE wrk2_benchmark_duration counter
+# TYPE wrk2_benchmark_node_cpuclock gauge
+wrk2_benchmark_node_cpuclock{kind="current"} 0
+# TYPE wrk2_benchmark_node_loadavg gauge
+wrk2_benchmark_node_loadavg{interval="1m",kind="raw"} 0
+wrk2_benchmark_node_loadavg{interval="5m",kind="raw"} 0
+wrk2_benchmark_node_loadavg{interval="15m",kind="raw"} 0
+wrk2_benchmark_node_loadavg{interval="1m",kind="per_core"} 0
+wrk2_benchmark_node_loadavg{interval="5m",kind="per_core"} 0
+wrk2_benchmark_node_loadavg{interval="15m",kind="per_core"} 0
+wrk2_benchmark_node_loadavg{interval="1m",kind="per_thread"} 0
+wrk2_benchmark_node_loadavg{interval="5m",kind="per_thread"} 0
+wrk2_benchmark_node_loadavg{interval="15m",kind="per_thread"} 0
+# TYPE wrk2_benchmark_node_meminfo gauge
+wrk2_benchmark_node_meminfo{kind="used"} 0
+# TYPE wrk2_benchmark_node_swapinfo gauge
+wrk2_benchmark_node_swapinfo{kind="used"} 0
+$(echo -e $per_thread_info)
+wrk2_benchmark_duration 0
+# TYPE wrk2_benchmark_run_requested_rps gauge
+# TYPE wrk2_benchmark_run_thread_count counter
+wrk2_benchmark_run_requested_rps $rps
+wrk2_benchmark_run_thread_count $conn
+$(cat wrk2_benchmark_run.txt)
+# TYPE wrk2_benchmark_run_runtime gauge
+wrk2_benchmark_run_runtime{kind="start"} $start_ts
+wrk2_benchmark_run_runtime{kind="end"} $end_ts
+wrk2_benchmark_run_runtime{kind="duration"} $duration_s
+# TYPE wrk2_benchmark_progress counter
+wrk2_benchmark_progress{status="init"} 100
+wrk2_benchmark_progress{status="run"} 100
+wrk2_benchmark_progress{status="done"} 100
+EOF
+
+# send final wrk2 stats
+awk '
+    # ---------------------------
+    # simple latency spectrum
+    /^[ 0-9.]+%/ {
+        if (latency) {
+            percentile = gensub(/%.*/, "", "g", $1) / 100
+            val  = gensub(/([0-9.]+).*/,"\\1","g",$2)
+            unit = gensub(/[0-9.]+(.*)/,"\\1","g",$2)
+            mul = 1
+            if (unit == "us") mul=0.0001
+            if (unit == "s")  mul=1000
+            if (unit == "m")  mul=60000
+            print "wrk2_benchmark_latency_ms{p=\"" percentile "\"} " val*mul
+        }
+    }
+    /Latency Distribution/ {
+        print "# TYPE wrk2_benchmark_latency_ms counter"
+        latency=1
+    }
+    # detailed latency spectrum
+    /^#/ { detailed=0 }
+    {
+        if (detailed) {
+            detailed = detailed + 1
+            if (detailed >= 3 && $2 != prev_perc) {
+                print "wrk2_benchmark_latency_detailed_ms{p=\"" $2 "\"} " $1
+                prev_perc=$2
+            }
+        }
+    }
+    /Detailed Percentile spectrum:/ {
+        latency=0
+        print "# TYPE wrk2_benchmark_latency_detailed_ms counter"
+        detailed=1
+    }
+    # overall RPS
+    /Requests\/sec:/ {
+        print "# TYPE wrk2_benchmark_run_rps counter"
+        print "wrk2_benchmark_run_rps " $2
+    }
+    # overall requests
+    /Total Requests:/{
+        print "# TYPE wrk2_benchmark_run_requests counter"
+        print "wrk2_benchmark_run_requests " $3
+    }
+    # socket error stats - not present if there are no errors
+    #   Socket errors: connect 0, read 25, write 0, timeout 0
+    { s_connect=0; s_read=0; s_write=0; s_timeout=0; }
+    /Socket errors:/ {
+        s_connect = gensub(/,/,"","g",$4)
+        s_read    = gensub(/,/,"","g",$6)
+        s_write   = gensub(/,/,"","g",$8)
+        s_timeout = $10
+    }
+    #   HTTP errors: 0
+    /HTTP errors:/ {
+        print "# TYPE wrk2_benchmark_http_errors counter"
+        print "wrk2_benchmark_http_errors " $3
+    }
+    #   Requests timed out: 0
+    /Requests timed out:/ {
+        print "# TYPE wrk2_benchmark_requests_timed_out counter"
+        print "wrk2_benchmark_requests_timed_out " $4
+    }
+    #   Bytes received: 1519608191
+    /Bytes received:/ {
+        print "# TYPE wrk2_benchmark_bytes_read counter"
+        print "wrk2_benchmark_bytes_read " $3
+    }
+    #    http://192.168.1.244/index.txt : 5397500
+    {
+        if (call_count)
+            url_call_count[$1] = url_call_count[$1] + $3
+    }
+    # Call count of URLs
+    /URL call count/ {
+        call_count=1
+    }
+    END {
+        print "# TYPE wrk2_benchmark_url_call_count counter"
+        for (url in url_call_count)
+            print "wrk2_benchmark_url_call_count{url=\"" url "\"} " \
+                                                            url_call_count[url]
+        print "# TYPE wrk2_benchmark_socket_errors counter"
+        print "wrk2_benchmark_socket_errors{t=\"connect\"} " s_connect
+        print "wrk2_benchmark_socket_errors{t=\"read\"} " s_read
+        print "wrk2_benchmark_socket_errors{t=\"write\"} " s_write
+        print "wrk2_benchmark_socket_errors{t=\"timeout\"} " s_timeout
+    }
+    # ---------------------------
+    ' stats \
+ | $curl_pgw
+
+
+# Run ab benchmark
+echo "Runnig ab benchmarks for $first_server ..."
+echo "---------------------------"
+ab -c $conn -t $dur -n $rps $first_server > /tmp/ab-benchmark.txt
+
+ab_benchmark_time_taken=$(cat /tmp/ab-benchmark.txt | grep "Time taken for tests" | cut -d":" -f2 | cut -d"s" -f1 | xargs)
+ab_benchmark_complete_request=$(cat /tmp/ab-benchmark.txt | grep "Complete requests" | cut -d":" -f2 | xargs)
+ab_benchmark_failed_request=$(cat /tmp/ab-benchmark.txt | grep "Failed requests" | cut -d":" -f2 | xargs)
+ab_benchmark_non_2xx_response=$(cat /tmp/ab-benchmark.txt | grep "Non-2xx responses" | cut -d":" -f2 | xargs)
+ab_benchmark_total_bytes_transferred=$(cat /tmp/ab-benchmark.txt | grep "Total transferred" | cut -d":" -f2 | cut -d"b" -f1 | xargs)
+ab_benchmark_requests_per_second=$(cat /tmp/ab-benchmark.txt | grep "Requests per second" | cut -d":" -f2 | cut -d"[" -f1 | xargs)
+ab_benchmark_time_per_request=$(cat /tmp/ab-benchmark.txt | grep "Time per request" | cut -d":" -f2 | cut -d"[" -f1 | head -1 | xargs)
+ab_benchmark_transfer_rate=$(cat /tmp/ab-benchmark.txt | grep "Transfer rate" | cut -d":" -f2 | cut -d"[" -f1 | xargs)
+
+
+cat <<EOF | $curl_pgw
+# TYPE ab_benchmark_ gauge
+$(echo "ab_benchmark_time_taken ${ab_benchmark_time_taken}")
+$(echo "ab_benchmark_complete_request ${ab_benchmark_complete_request}")
+$(echo "ab_benchmark_failed_request ${ab_benchmark_failed_request}")
+$(echo "ab_benchmark_non_2xx_response ${ab_benchmark_non_2xx_response}")
+$(echo "ab_benchmark_total_bytes_transferred ${ab_benchmark_total_bytes_transferred}")
+$(echo "ab_benchmark_requests_per_second ${ab_benchmark_requests_per_second}")
+$(echo "ab_benchmark_time_per_request ${ab_benchmark_time_per_request}")
+$(echo "ab_benchmark_transfer_rate ${ab_benchmark_transfer_rate}")
+EOF
+
+echo "Wrote ab metrics to pushgateway!"
+
+# exit successfully
+true
