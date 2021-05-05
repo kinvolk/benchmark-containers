@@ -126,8 +126,16 @@ for I in $(seq 1 $MYSQL_ITERATIONS); do
     $(echo "mysql_thread_fairness_events ${thread_fairness_events}")
     $(echo "mysql_thread_fairness_execution_time ${thread_fairness_execution_time}")
 
-    # TYPE mysql_run_time_information_all gauge
-    $(cat /tmp/output-$I.json | jq -r '.[] | "mysql_run_time_information_all{time="+ "\"" + (.time|tostring) + "\"" + ",threads=" + "\"" + (.threads|tostring) + "\"" + ",latency=" + "\"" + (.latency|tostring) + "\"" + ",errors=" + "\"" + (.errors|tostring) + "\"" + ",reconnects=" + "\"" + (.reconnects|tostring) + "\"" +  "}" + " " + (.tps|tostring)')
+    # TYPE mysql_benchmark_result_ gauge
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_threads{time="+ "\"" + (.time|tostring) + "\"} " + (.threads|tostring)')
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_tps{time="+ "\"" + (.time|tostring) + "\"} " + (.tps|tostring)')
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_latency{time="+ "\"" + (.time|tostring) + "\"} " + (.latency|tostring)')
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_errors{time="+ "\"" + (.time|tostring) + "\"} " + (.errors|tostring)')
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_reconnects{time="+ "\"" + (.time|tostring) + "\"} " + (.reconnects|tostring)')
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_qps_total{time="+ "\"" + (.time|tostring) + "\"} " + (.qps.total|tostring)')
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_qps_reads{time="+ "\"" + (.time|tostring) + "\"} " + (.qps.reads|tostring)')
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_qps_writes{time="+ "\"" + (.time|tostring) + "\"} " + (.qps.writes|tostring)')
+    $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_qps_other{time="+ "\"" + (.time|tostring) + "\"} " + (.qps.other|tostring)')
 
 EOF
 done
