@@ -1,0 +1,24 @@
+threads: 1
+type: envoy
+iterations: 1
+pushgatewayURL: http://pushgateway.monitoring:9091
+cloud: em
+instance: instancetype
+jobname: envoy-benchmark-job
+# nodeSelector:
+#   node: master
+
+# tolerations:
+# - key: node-role.kubernetes.io/master
+#   operator: Equal
+#   value: ""
+#   effect: NoSchedule
+
+service:
+  name: envoy
+
+benchmark:
+  duration: 120
+  connections: 96
+  RPS: 3000
+  initDelay: 0
