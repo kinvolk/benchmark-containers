@@ -14,26 +14,23 @@ spec:
       - name: run-memtier-benchmark
         image: quay.io/kinvolk/benchmark-memtier
         imagePullPolicy: Always
-        env:
-        - name: MEMTIER_TYPE
-          value: "{{ .Values.type }}"
-        - name: MEMTIER_THREADS
-          value: "{{ .Values.threads }}"
-        - name: MEMTIER_ITERATIONS
-          value: "{{ .Values.iterations }}"
-        - name: PUSHGATEWAY_URL
-          value: "{{ .Values.pushgatewayURL }}"
-        - name: CLOUD
-          value: "{{ .Values.cloud }}"
-        - name: INSTANCE
-          value: "{{ .Values.instance }}"
-        - name: JOBNAME
-          value: "{{ .Values.jobname }}"
         command:
-        - sh
-        args:
-        - -c
         - /usr/local/bin/run-benchmark.sh
+        args:
+        - --type
+        - "{{ .Values.type }}"
+        - --threads
+        - "{{ .Values.threads }}"
+        - --iterations
+        - "{{ .Values.iterations }}"
+        - --push-gateway
+        - "{{ .Values.pushgatewayURL }}"
+        - --cloud
+        - "{{ .Values.cloud }}"
+        - --instance
+        - "{{ .Values.instance }}"
+        - --job-name
+        - "{{ .Values.jobname }}"
       automountServiceAccountToken: false
       {{- if .Values.nodeSelector }}
       nodeSelector:

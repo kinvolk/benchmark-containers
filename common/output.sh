@@ -3,16 +3,20 @@
 set -eu
 
 output_options_short() {
-  echo "[-i iterations] [-r result] [-j job_id] [-c cost] [-m metadata]"
+  echo "[-i iterations] [-r result] [-j job_name] [-c cost] [-m metadata]"
+  echo "[-I instance_type] [-C cloud_platform] [-P push_gateway_url]"
 }
 
 output_options_long() {
   cat <<EOF
--i, --iterations Number of iterations to run
--r, --result     Name of the result column
--j, --job-id     Job identifier
--c, --cost       Cost/hour value
--m, --metadata   Metadata related to the benchmark
+-i, --iterations   Number of iterations to run
+-r, --result       Name of the result column
+-j, --job-name     Job name identifier
+-c, --cost         Cost/hour value
+-I, --instance     Instance type
+-C, --cloud        Cloud platform
+-P, --push-gateway URL of the Push Gateway
+-m, --metadata     Metadata related to the benchmark
 EOF
   exit
 }
@@ -23,6 +27,9 @@ parse_output_params() {
   ID=""
   COST=""
   META=""
+  CLOUD=""
+  INSTANCE=""
+  PUSHGATEWAY_URL=""
   UNPARSED=""
 
   while [ $# -gt 0 ]; do
@@ -47,6 +54,18 @@ parse_output_params() {
       META="${2-}"
       shift
       ;;
+    -I | --instance)
+      INSTANCE="${2-}"
+      shift
+      ;;
+    -C | --cloud)
+      CLOUD="${2-}"
+      shift
+      ;;
+    -P | --push-gateway)
+      PUSHGATEWAY_URL="${2-}"
+      shift
+      ;;
     *) # Keep unknown params to have them be parsed by other functions
       UNPARSED="$UNPARSED $1"
       ;;
@@ -63,4 +82,11 @@ output_header() {
 output_line() {
   VALUE=$1
   echo "CSV:$BENCHMARK_NAME,$PARAMS,$SYSTEM,$VALUE,$ID,$COST,$META"
+}
+
+push_metrics() {
+  VALUE="$1"
+  if [[ -n "$PUSHGATEWAY_URL" ]]; then
+    echo "$VALUE" | curl --data-binary @- $PUSHGATEWAY_URL/metrics/job/$BENCHMARK_NAME/cloud/$CLOUD/instance/$INSTANCE/run/$RUN_ID
+  fi
 }

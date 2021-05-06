@@ -1,0 +1,736 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 28,
+  "iteration": 1620305624847,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.4.3",
+      "targets": [
+        {
+          "expr": "memtier_run_information_threads{cloud=\"$cloud\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "General Statistics - Threads",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 46,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.4.3",
+      "targets": [
+        {
+          "expr": "memtier_run_information_connections_per_thread{cloud=\"$cloud\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "General Statistics - Connections per Thread",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 47,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.4.3",
+      "targets": [
+        {
+          "expr": "memtier_run_information_seconds{cloud=\"$cloud\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "General Statistics - Seconds",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "7.4.3",
+      "targets": [
+        {
+          "expr": "memtier_all_stats_totals_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "format": "time_series",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Ops/s",
+          "refId": "E"
+        },
+        {
+          "expr": "memtier_all_stats_totals_hits_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Hits/s",
+          "refId": "C"
+        },
+        {
+          "expr": "memtier_all_stats_totals_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Kb/s",
+          "refId": "B"
+        },
+        {
+          "expr": "memtier_all_stats_totals_misses_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Misses/s",
+          "refId": "A"
+        },
+        {
+          "expr": "memtier_all_stats_totals_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Latency",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Totals",
+      "type": "gauge"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "id": 40,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "7.4.3",
+      "targets": [
+        {
+          "expr": "memtier_all_stats_waits_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Ops/s",
+          "refId": "E"
+        },
+        {
+          "expr": "memtier_all_stats_waits_hits_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Hits/s",
+          "refId": "C"
+        },
+        {
+          "expr": "memtier_all_stats_waits_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Kb/s",
+          "refId": "B"
+        },
+        {
+          "expr": "memtier_all_stats_waits_misses_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Misses/s",
+          "refId": "A"
+        },
+        {
+          "expr": "memtier_all_stats_waits_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Latency",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Waits",
+      "type": "gauge"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "id": 41,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "7.4.3",
+      "targets": [
+        {
+          "expr": "memtier_all_stats_gets_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Ops/s",
+          "refId": "E"
+        },
+        {
+          "expr": "memtier_all_stats_gets_hits_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Hits/s",
+          "refId": "C"
+        },
+        {
+          "expr": "memtier_all_stats_gets_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Kb/s",
+          "refId": "B"
+        },
+        {
+          "expr": "memtier_all_stats_gets_misses_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Misses/s",
+          "refId": "A"
+        },
+        {
+          "expr": "memtier_all_stats_gets_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Latency",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Gets",
+      "type": "gauge"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "id": 42,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "7.4.3",
+      "targets": [
+        {
+          "expr": "memtier_all_stats_sets_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Ops/s",
+          "refId": "E"
+        },
+        {
+          "expr": "memtier_all_stats_sets_hits_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Hits/s",
+          "refId": "C"
+        },
+        {
+          "expr": "memtier_all_stats_sets_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Kb/s",
+          "refId": "B"
+        },
+        {
+          "expr": "memtier_all_stats_sets_misses_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Misses/s",
+          "refId": "A"
+        },
+        {
+          "expr": "memtier_all_stats_sets_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Latency",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Sets",
+      "type": "gauge"
+    }
+  ],
+  "refresh": false,
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "Prometheus"
+        },
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "datasource": null,
+        "definition": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\"},cloud)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "cloud",
+        "options": [],
+        "query": {
+          "query": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\"},cloud)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "isNone": true,
+          "selected": false,
+          "text": "None",
+          "value": ""
+        },
+        "datasource": null,
+        "definition": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\"}, cluster)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "cluster",
+        "options": [
+          {
+            "isNone": true,
+            "selected": true,
+            "text": "None",
+            "value": ""
+          }
+        ],
+        "query": {
+          "query": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\"}, cluster)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "datasource": null,
+        "definition": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\",cluster=\"$cluster\"},exported_instance)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "instance",
+        "options": [],
+        "query": {
+          "query": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\",cluster=\"$cluster\"},exported_instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "datasource": null,
+        "definition": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\",cluster=\"$cluster\",exported_instance=\"$instance\",exported_job=\"memtier_memcached\"},run)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "run",
+        "options": [],
+        "query": {
+          "query": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\",cluster=\"$cluster\",exported_instance=\"$instance\",exported_job=\"memtier_memcached\"},run)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Memtier Memcached Benchmark",
+  "uid": "uLqqxgjGk",
+  "version": 10
+}

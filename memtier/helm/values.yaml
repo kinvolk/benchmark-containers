@@ -1,6 +1,6 @@
-threads: 1
-type: memcached
-iterations: 1
+threads: 1;4;8;16
+type: memcached;redis
+iterations: 5
 pushgatewayURL: http://pushgateway.monitoring:9091
 cloud: em
 instance: instancetype
