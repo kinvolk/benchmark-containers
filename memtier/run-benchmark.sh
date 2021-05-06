@@ -1,5 +1,4 @@
-# This script has no hashbang as it's intended to run on systems with ash or
-# bash, including busybox.
+#!/bin/sh
 set -eu
 
 . /usr/local/bin/output.sh
@@ -80,7 +79,7 @@ for P in $(seq 1 $BENCHMARKPROCESSES); do
 done
 
 SYSTEM=$(/usr/local/bin/cpu.sh system)
-BENCHMARK_NAME="memtier $TYPE"
+BENCHMARK_NAME="memtier_$TYPE"
 PARAMS="$CONCURRENCYTYPE=$THREADS"
 output_header
 
@@ -97,10 +96,10 @@ for I in $(seq 1 $ITERATIONS); do
     SUM="$(( SUM + P ))"
   done
   # Pushing metrics to pushgateway.
+  TS=$(date -Iseconds | sed -e 's/T/__/' -e 's/+.*//')
   for P in $(seq 1 $BENCHMARKPROCESSES); do
-    ts=$(date -Iseconds | sed -e 's/T/__/' -e 's/+.*//')
-    cat <<EOF | curl --data-binary @- $PUSHGATEWAY_URL/metrics/job/$JOBNAME/cloud/$CLOUD/instance/$INSTANCE/run/$ts
-
+    RUN_ID="$TS/process/$P"
+    read -d '' metrics <<EOF || true
         # TYPE memtier_run_information_ gauge
         $(cat /tmp/$I-$P.json | jq -r '."run information" | to_entries | .[] | "memtier_run_information_"+ (.key|ascii_downcase|gsub("\\s";"_")) + " " + (.value|tostring)')
 
@@ -122,6 +121,7 @@ for I in $(seq 1 $ITERATIONS); do
         # TYPE memtier_request_latency_distribution_get gauge
         $(cat /tmp/$I-$P.json | jq -r '."ALL STATS".GET | .[] | "memtier_request_latency_distribution_get{msec=" + "\"" + (."<=msec"|tostring) + "\"" + "}" + " " + (.percent|tostring)')
 EOF
+    push_metrics "$metrics"
   done
   output_line "$SUM"
 done
