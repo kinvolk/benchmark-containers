@@ -156,8 +156,8 @@ function run_bench() {
 # --
 
 function run_benchmarks() {
-    for rps in 500 1000 1500 2000 2500 3000 3500 4000 4500 5000 5500; do
-        for repeat in 1 2 3 4 5; do
+    for rps in 1000 3000 5000; do
+        for repeat in 1 2; do
             echo "########## Run #$repeat w/ $rps RPS"
 
             echo " +++ bare metal benchmark"
