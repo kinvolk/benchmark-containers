@@ -172,3 +172,5 @@ function run_benchmarks() {
 if [ "$(basename $0)" = "run_benchmark.sh" ] ; then
     run_benchmarks $@
 fi
+
+helm install --create-namespace pytorch-benchmark --namespace pytorch-benchmark ../pytorch/helm
