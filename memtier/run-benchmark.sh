@@ -50,19 +50,13 @@ parse_params() {
 
 parse_params "$@"
 
-TYPE="${MEMTIER_TYPE}"
-THREADS=${MEMTIER_THREADS}
-ITERATIONS=${MEMTIER_ITERATIONS}
-PUSHGATEWAY_URL=${PUSHGATEWAY_URL}
-CLOUD=${CLOUD}
-INSTANCE=${INSTANCE}
-JOBNAME=${JOBNAME}
-
 cd /tmp
 PORT=7000
 
 if [ "$TYPE" = "memcached" ]; then
-  BENCHMARKTHREADS="$THREADS"
+  # When benchmarking memcached, use half as many more threads as those being
+  # used by the server.
+  BENCHMARKTHREADS=$(($THREADS+$THREADS/2))
   BENCHMARKPROCESSES=1
   CONCURRENCYTYPE=threads
   PROTOCOL=memcache_binary
@@ -94,7 +88,7 @@ echo "Using $BENCHMARKPROCESSES processes and $BENCHMARKTHREADS threads for the 
 for I in $(seq 1 $ITERATIONS); do
   WAIT=""
   for P in $(seq 1 $BENCHMARKPROCESSES); do
-    { memtier_benchmark -p "$(( PORT + P ))" -P "$PROTOCOL" -t "$BENCHMARKTHREADS" --test-time 30 --ratio 1:1 -c 25 -x 1 --data-size-range=10240-1048576 --key-pattern S:S --json-out-file=$I-$P.json 2>&1 | tee /dev/stderr | grep Totals | tail -n 1 | awk '{print $2}' | cut -d . -f 1 > "$P" ; } &
+    { memtier_benchmark -p "$(( PORT + P ))" -P "$PROTOCOL" -t "$BENCHMARKTHREADS" --test-time 30 --pipeline=100 --ratio 1:1 -c 25 -x 1 --data-size-range=10240-1048576 --key-pattern S:S --json-out-file=$I-$P.json 2>&1 | tee /dev/stderr | grep Totals | tail -n 1 | awk '{print $2}' | cut -d . -f 1 > "$P" ; } &
     WAIT="$WAIT""$! "
   done
   wait $WAIT
