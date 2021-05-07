@@ -3,7 +3,7 @@ wrk2:
   connections: 96
   RPS: 3000
   initDelay: 0
-  serviceMesh: ""
+  machine: ""
   app:
     name: emojivoto
     count: "10"

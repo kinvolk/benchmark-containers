@@ -2,12 +2,13 @@
 
 script_location="$(dirname "${BASH_SOURCE[0]}")"
 
-if [ "$#" -ne 1 ]; then
-    echo "usage: $0 EMOJIVOTO_INSTANCES"
+if [ "$#" -ne 2 ]; then
+    echo "usage: $0 EMOJIVOTO_INSTANCES MACHINE_TYPE"
     exit 1
 fi
 
 emojivoto_limit="$(( $1 - 1 ))"
+machine="$2"
 
 function grace() {
     grace=10
@@ -34,16 +35,11 @@ function grace() {
 # --
 
 function install_emojivoto() {
-    local mesh="$1"
-
     echo "Installing emojivoto."
 
     for num in $(seq 0 1 $emojivoto_limit); do
         {
             kubectl create namespace emojivoto-$num
-
-            [ "$mesh" == "istio" ] && \
-                kubectl label namespace emojivoto-$num istio-injection=enabled
 
             helm install emojivoto-$num --namespace emojivoto-$num \
                              ${script_location}/helm/emojivoto/
@@ -92,7 +88,7 @@ function run() {
 # --
 
 function install_benchmark() {
-    local mesh="$1"
+    local machine="$1"
     local rps="$2"
 
     local duration=600
@@ -100,36 +96,24 @@ function install_benchmark() {
 
     local app_count=$(kubectl get namespaces | grep emojivoto | wc -l)
 
-    echo "Running $mesh benchmark"
+    echo "Running $machine benchmark"
     kubectl create ns benchmark
-    [ "$mesh" == "istio" ] && \
-        kubectl label namespace benchmark istio-injection=enabled
-    if [ "$mesh" != "bare-metal" ] ; then
-        helm install benchmark --namespace benchmark \
-            --set wrk2.serviceMesh="$mesh" \
-            --set wrk2.app.count="$app_count" \
-            --set wrk2.RPS="$rps" \
-            --set wrk2.duration=$duration \
-            --set wrk2.connections=128 \
-            --set wrk2.initDelay=$init_delay \
-            ${script_location}/helm/benchmark/
-    else
-        helm install benchmark --namespace benchmark \
-            --set wrk2.app.count="$app_count" \
-            --set wrk2.RPS="$rps" \
-            --set wrk2.duration=$duration \
-            --set wrk2.initDelay=$init_delay \
-            --set wrk2.connections=128 \
-            ${script_location}/helm/benchmark/
-    fi
+    helm install benchmark --namespace benchmark \
+        --set wrk2.machine="$machine" \
+        --set wrk2.app.count="$app_count" \
+        --set wrk2.RPS="$rps" \
+        --set wrk2.duration=$duration \
+        --set wrk2.connections=128 \
+        --set wrk2.initDelay=$init_delay \
+        ${script_location}/helm/benchmark/
 }
 # --
 
 function run_bench() {
-    local mesh="$1"
+    local machine="$1"
     local rps="$2"
 
-    install_benchmark "$mesh" "$rps"
+    install_benchmark "$machine" "$rps"
     grace "kubectl get pods -n benchmark | grep wrk2-prometheus | grep -v Running" 10
 
     echo "Benchmark started."
@@ -168,8 +152,8 @@ function run_benchmarks() {
             echo "########## Run #$repeat w/ $rps RPS"
 
             echo " +++ bare metal benchmark"
-            install_emojivoto bare-metal
-            run_bench bare-metal $rps
+            install_emojivoto
+            run_bench $machine $rps
             delete_emojivoto
         done
     done
