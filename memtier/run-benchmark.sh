@@ -98,7 +98,7 @@ benchmark() {
     # Pushing metrics to pushgateway.
     TS=$(date -Iseconds | sed -e 's/T/__/' -e 's/+.*//')
     for P in $(seq 1 $BENCHMARKPROCESSES); do
-      RUN_ID="$TS/process/$P"
+      RUN_ID="$TS/threads/$THREADS/process/$P"
       read -d '' metrics <<EOF || true
           # TYPE memtier_run_information_ gauge
           $(cat /tmp/$I-$P.json | jq -r '."run information" | to_entries | .[] | "memtier_run_information_"+ (.key|ascii_downcase|gsub("\\s";"_")) + " " + (.value|tostring)')
