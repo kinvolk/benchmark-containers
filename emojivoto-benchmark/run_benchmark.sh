@@ -10,6 +10,26 @@ fi
 emojivoto_limit="$(( $1 - 1 ))"
 machine="$2"
 
+if [ $emojivoto_limit -ge 35 ]; then
+    kubectl calico apply -f - <<EOF
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+  name: benchmark-pool
+spec:
+  cidr: 10.0.0.0/16
+  blockSize: 20
+  ipipMode: Always
+  natOutgoing: true
+EOF
+    UNLEASHED="$(kubectl -n kube-system get daemonset kubelet -o yaml | grep 'max-pods=500')"
+    if [ -z "$UNLEASHED" ]; then
+        kubectl -n kube-system patch daemonset kubelet --patch "$(cat kubelet-patch.yaml)"
+    fi
+
+    UNLEASHED="yes"
+fi
+
 function grace() {
     grace=10
     [ -n "$2" ] && grace="$2"
@@ -40,6 +60,9 @@ function install_emojivoto() {
     for num in $(seq 0 1 $emojivoto_limit); do
         {
             kubectl create namespace emojivoto-$num
+            if [ -n "$UNLEASHED" ]; then
+                kubectl annotate namespace emojivoto-$num "cni.projectcalico.org/ipv4pools"='["benchmark-pool"]'
+            fi
 
             helm install emojivoto-$num --namespace emojivoto-$num \
                              ${script_location}/helm/emojivoto/
@@ -98,6 +121,9 @@ function install_benchmark() {
 
     echo "Running $machine benchmark"
     kubectl create ns benchmark
+    if [ -n "$UNLEASHED" ]; then
+        kubectl annotate namespace benchmark "cni.projectcalico.org/ipv4pools"='["benchmark-pool"]'
+    fi
     helm install benchmark --namespace benchmark \
         --set wrk2.machine="$machine" \
         --set wrk2.app.count="$app_count" \

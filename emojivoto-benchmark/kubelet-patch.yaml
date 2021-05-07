@@ -1,0 +1,33 @@
+spec:
+  template:
+    spec:
+      containers:
+      - name: kubelet
+        args:
+        - |
+          echo "/usr/local/bin/kubelet \
+          --node-ip=$(HOST_IP)  \
+          --anonymous-auth=false \
+          --authentication-token-webhook \
+          --authorization-mode=Webhook \
+          --client-ca-file=/etc/kubernetes/ca.crt \
+          --cluster_dns=10.3.0.10 \
+          --cloud-provider=external \
+          --cluster_domain=cluster.local \
+          --cni-conf-dir=/etc/cni/net.d \
+          --config=/etc/kubernetes/kubelet.config \
+          --kubeconfig=/var/lib/kubelet/kubeconfig \
+          --bootstrap-kubeconfig=/etc/kubernetes/kubeconfig \
+          --rotate-certificates \
+          --lock-file=/var/run/lock/kubelet.lock \
+          --network-plugin=cni \
+          --pod-manifest-path=/etc/kubernetes/manifests \
+          --read-only-port=0 \
+          --volume-plugin-dir=/var/lib/kubelet/volumeplugins \
+          --node-labels=$(grep NODE_LABELS /etc/kubernetes/kubelet.env | cut -d'"' -f2) \
+          --register-with-taints=$(grep NODE_TAINTS /etc/kubernetes/kubelet.env | cut -d'"' -f2) \
+          --address=$(HOST_IP) \
+          --max-pods=500 \
+          " | tee /tmp/start-kubelet.sh &&
+          chmod +x /tmp/start-kubelet.sh &&
+          /tmp/start-kubelet.sh
