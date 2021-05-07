@@ -40,10 +40,18 @@ spec:
           requests:
             cpu: 100m
       serviceAccountName: emoji
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
       tolerations:
         {{- with .Values.tolerations }}
 {{ toYaml . | indent 6 }}
         {{- end }}
+      {{ end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -87,10 +95,18 @@ spec:
           requests:
             cpu: 100m
       serviceAccountName: voting
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
       tolerations:
         {{- with .Values.tolerations }}
 {{ toYaml . | indent 6 }}
         {{- end }}
+      {{ end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -136,7 +152,15 @@ spec:
           requests:
             cpu: 100m
       serviceAccountName: web
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $value := .Values.nodeSelector }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
+      {{ end -}}
+      {{- if .Values.tolerations }}
       tolerations:
         {{- with .Values.tolerations }}
 {{ toYaml . | indent 6 }}
         {{- end }}
+      {{ end }}

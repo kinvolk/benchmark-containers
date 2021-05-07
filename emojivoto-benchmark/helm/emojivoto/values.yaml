@@ -1,3 +1,6 @@
+nodeSelector:
+  role: benchmark
+
 tolerations:
 - key: role
   operator: Equal
