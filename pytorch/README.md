@@ -27,8 +27,8 @@ Prerequisites:
 
 This runs the benchmark (both training and evaluation) with the recommended tests settings discussed below. Results will appear in the Grafana dashboard.
 
-```
-helm install --create-namespace pytorch-benchmark --namespace pytorch-benchmark .
+```shell
+$ helm install --create-namespace pytorch-benchmark --namespace pytorch-benchmark .
 ```
 
 See [helm/values.yaml](helm/values.yaml) for options and parameters.
@@ -37,9 +37,28 @@ See [helm/values.yaml](helm/values.yaml) for options and parameters.
 
 This removes namespace and benchmark job.
 
+```shell
+$ helm uninstall pytorch-benchmark
 ```
-helm uninstall pytorch-benchmark
+
+## Automation script for running on multiple clusters at once
+
+An automation script is provided to run this benchmark in multiple clusters in parallel.
+The script is provided with multiple kubeconfigs - one per cluster - and will start the benchmarks
+on all clusters, then wait for completion.
+
+Usage:
+```shell
+$ automation.sh [-p <pushgateway-url>] [-c <num cpus>] <kubeconfig>,<cloud>,<shape> [<kubeconfig>,<cloud>,<shape> [...]]
 ```
+
+Try `automation.sh -h` for command line help.
+
+Example:
+```shell
+$ automation.sh -p https://user@secret:pushgateway.orchestrator-cluster.benchmarks.org aws-kcfg,aws,m5g.metal em-kcfg,EM,m3.large
+```
+
 
 # Recommended tests
 
