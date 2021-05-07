@@ -87,6 +87,8 @@ output_line() {
 push_metrics() {
   VALUE="$1"
   if [[ -n "$PUSHGATEWAY_URL" ]]; then
-    echo "$VALUE" | curl --data-binary @- $PUSHGATEWAY_URL/metrics/job/$BENCHMARK_NAME/cloud/$CLOUD/instance/$INSTANCE/run/$RUN_ID
+    METRICS_URL="$PUSHGATEWAY_URL/metrics/job/$BENCHMARK_NAME/cloud/$CLOUD/instance/$INSTANCE/run/$RUN_ID"
+    echo "Pushing metrics to: $METRICS_URL"
+    echo "$VALUE" | curl --data-binary @- "$METRICS_URL"
   fi
 }
