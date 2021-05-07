@@ -4,9 +4,17 @@ This container provides the [pytorch](https://github.com/pytorch/benchmark) mach
 
 A convenience wrapper script, `benchmark.sh` is supplied for ease of use. The convenience script supports feeding progress and result metrics to a Prometheus [pushgateway](https://github.com/prometheus/pushgateway). A dashboard displaying progress and results is also provided.
 
+## Dashboard in action
+
+This dashboard displays metrics of a single run.
 
 ![Pytorch Grafana dashboard screenshot](grafana/pytorch-grafana.png "Pytorch benchmark Grafana dashboard")
 
+## Summary dashboard in action
+
+This dashboard allows for comparing the results of multiple runs.
+
+![Pytorch summary Grafana dashboard screenshot](grafana/pytorch-grafana-summary.png "Pytorch benchmark summary Grafana dashboard")
 
 ## Running on Kubernetes
 
