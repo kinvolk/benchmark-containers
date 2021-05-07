@@ -8,3 +8,5 @@ wrk2:
     name: emojivoto
     count: "10"
   appImage: quay.io/kinvolk/wrk2-prometheus
+  nodeSelector:
+    role: generator
