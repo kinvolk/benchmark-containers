@@ -2,6 +2,13 @@
 
 script_location="$(dirname "${BASH_SOURCE[0]}")"
 
+if [ "$#" -ne 1 ]; then
+    echo "usage: $0 EMOJIVOTO_INSTANCES"
+    exit 1
+fi
+
+emojivoto_limit="$(( $1 - 1 ))"
+
 function grace() {
     grace=10
     [ -n "$2" ] && grace="$2"
@@ -31,7 +38,7 @@ function install_emojivoto() {
 
     echo "Installing emojivoto."
 
-    for num in $(seq 0 1 39); do
+    for num in $(seq 0 1 $emojivoto_limit); do
         {
             kubectl create namespace emojivoto-$num
 
@@ -51,7 +58,7 @@ function install_emojivoto() {
 
 function restart_emojivoto_pods() {
 
-    for num in $(seq 0 1 39); do
+    for num in $(seq 0 1 $emojivoto_limit); do
         local ns="emojivoto-$num"
         echo "Restarting pods in $ns"
         {  local pods="$(kubectl get -n "$ns" pods | grep -vE '^NAME' | awk '{print $1}')"
@@ -67,7 +74,7 @@ function restart_emojivoto_pods() {
 function delete_emojivoto() {
     echo "Deleting emojivoto."
 
-    for i in $(seq 0 1 39); do
+    for i in $(seq 0 1 $emojivoto_limit); do
         { helm uninstall emojivoto-$i --namespace emojivoto-$i;
           kubectl delete namespace emojivoto-$i --wait; } &
     done
