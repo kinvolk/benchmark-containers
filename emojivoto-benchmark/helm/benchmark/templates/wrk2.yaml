@@ -23,9 +23,9 @@ spec:
           medium: Memory
       shareProcessNamespace: true
       serviceAccountName: benchmark
-      {{- if .Values.nodeSelector }}
+      {{- if .Values.wrk2.nodeSelector }}
       nodeSelector:
-        {{- range $key, $value := .Values.nodeSelector }}
+        {{- range $key, $value := .Values.wrk2.nodeSelector }}
         {{ $key }}: {{ $value }}
         {{- end }}
       {{ end -}}
