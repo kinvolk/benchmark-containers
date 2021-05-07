@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 28,
-  "iteration": 1620305624847,
+  "id": 31,
+  "iteration": 1620392438755,
   "links": [],
   "panels": [
     {
@@ -228,8 +228,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 5,
+        "w": 9,
         "x": 0,
         "y": 5
       },
@@ -255,44 +255,36 @@
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Ops/s",
+          "legendFormat": "Total",
           "refId": "E"
         },
         {
-          "expr": "memtier_all_stats_totals_hits_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "expr": "memtier_all_stats_sets_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Hits/s",
-          "refId": "C"
-        },
-        {
-          "expr": "memtier_all_stats_totals_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Kb/s",
+          "legendFormat": "Sets",
           "refId": "B"
         },
         {
-          "expr": "memtier_all_stats_totals_misses_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Misses/s",
-          "refId": "A"
-        },
-        {
-          "expr": "memtier_all_stats_totals_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "expr": "memtier_all_stats_gets_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Latency",
-          "refId": "D"
+          "legendFormat": "Gets",
+          "refId": "C"
+        },
+        {
+          "expr": "memtier_all_stats_waits_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Waits",
+          "refId": "A"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Totals",
+      "title": "Total Ops/s",
       "type": "gauge"
     },
     {
@@ -318,12 +310,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
+        "h": 5,
+        "w": 9,
+        "x": 9,
         "y": 5
       },
-      "id": 40,
+      "id": 50,
       "options": {
         "orientation": "auto",
         "reduceOptions": {
@@ -340,52 +332,46 @@
       "pluginVersion": "7.4.3",
       "targets": [
         {
-          "expr": "memtier_all_stats_waits_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "expr": "memtier_all_stats_totals_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "format": "time_series",
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Ops/s",
+          "legendFormat": "Total",
           "refId": "E"
         },
         {
-          "expr": "memtier_all_stats_waits_hits_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "expr": "memtier_all_stats_sets_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Hits/s",
+          "legendFormat": "Sets",
+          "refId": "B"
+        },
+        {
+          "expr": "memtier_all_stats_gets_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Gets",
           "refId": "C"
         },
         {
           "expr": "memtier_all_stats_waits_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Kb/s",
-          "refId": "B"
-        },
-        {
-          "expr": "memtier_all_stats_waits_misses_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Misses/s",
+          "legendFormat": "Waits",
           "refId": "A"
-        },
-        {
-          "expr": "memtier_all_stats_waits_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Latency",
-          "refId": "D"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Waits",
+      "title": "Kb/s",
       "type": "gauge"
     },
     {
       "datasource": null,
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -407,10 +393,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 5,
+        "w": 9,
         "x": 0,
-        "y": 13
+        "y": 10
       },
       "id": 41,
       "options": {
@@ -445,14 +431,6 @@
           "refId": "C"
         },
         {
-          "expr": "memtier_all_stats_gets_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Kb/s",
-          "refId": "B"
-        },
-        {
           "expr": "memtier_all_stats_gets_misses_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
           "instant": true,
           "interval": "",
@@ -460,17 +438,17 @@
           "refId": "A"
         },
         {
-          "expr": "memtier_all_stats_gets_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "expr": "memtier_all_stats_gets_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Latency",
-          "refId": "D"
+          "legendFormat": "Kb/s",
+          "refId": "B"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Gets",
+      "title": "Gets (Hits vs Misses)",
       "type": "gauge"
     },
     {
@@ -496,12 +474,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 13
+        "h": 5,
+        "w": 9,
+        "x": 9,
+        "y": 10
       },
-      "id": 42,
+      "id": 52,
       "options": {
         "orientation": "auto",
         "reduceOptions": {
@@ -518,48 +496,41 @@
       "pluginVersion": "7.4.3",
       "targets": [
         {
-          "expr": "memtier_all_stats_sets_ops_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "expr": "memtier_all_stats_totals_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "format": "time_series",
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Ops/s",
+          "legendFormat": "Total",
           "refId": "E"
-        },
-        {
-          "expr": "memtier_all_stats_sets_hits_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Hits/s",
-          "refId": "C"
-        },
-        {
-          "expr": "memtier_all_stats_sets_kb_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Kb/s",
-          "refId": "B"
-        },
-        {
-          "expr": "memtier_all_stats_sets_misses_sec{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Misses/s",
-          "refId": "A"
         },
         {
           "expr": "memtier_all_stats_sets_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
           "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "Latency",
-          "refId": "D"
+          "legendFormat": "Sets",
+          "refId": "B"
+        },
+        {
+          "expr": "memtier_all_stats_gets_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Gets",
+          "refId": "C"
+        },
+        {
+          "expr": "memtier_all_stats_waits_latency{cloud=\"$cloud\", cluster=\"$cluster\", exported_instance=\"$instance\", run=\"$run\"}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Waits",
+          "refId": "A"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Sets",
+      "title": "Latency (ms)",
       "type": "gauge"
     }
   ],
@@ -593,9 +564,9 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
-          "text": "",
-          "value": ""
+          "selected": true,
+          "text": "aws",
+          "value": "aws"
         },
         "datasource": null,
         "definition": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\"},cloud)",
@@ -624,10 +595,9 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
           "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "bc-us-east-1-67154",
+          "value": "bc-us-east-1-67154"
         },
         "datasource": null,
         "definition": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\"}, cluster)",
@@ -640,10 +610,14 @@
         "name": "cluster",
         "options": [
           {
-            "isNone": true,
             "selected": true,
-            "text": "None",
-            "value": ""
+            "text": "bc-us-east-1-67154",
+            "value": "bc-us-east-1-67154"
+          },
+          {
+            "selected": false,
+            "text": "bc-us-west-1-99370",
+            "value": "bc-us-west-1-99370"
           }
         ],
         "query": {
@@ -664,8 +638,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "",
-          "value": ""
+          "text": "r6g.metal",
+          "value": "r6g.metal"
         },
         "datasource": null,
         "definition": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\",cluster=\"$cluster\"},exported_instance)",
@@ -695,8 +669,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "",
-          "value": ""
+          "text": "2021-05-07__07:34:35",
+          "value": "2021-05-07__07:34:35"
         },
         "datasource": null,
         "definition": "label_values(memtier_run_information_seconds{exported_job=\"memtier_memcached\",cloud=\"$cloud\",cluster=\"$cluster\",exported_instance=\"$instance\",exported_job=\"memtier_memcached\"},run)",
@@ -732,5 +706,5 @@
   "timezone": "",
   "title": "Memtier Memcached Benchmark",
   "uid": "uLqqxgjGk",
-  "version": 10
+  "version": 4
 }
