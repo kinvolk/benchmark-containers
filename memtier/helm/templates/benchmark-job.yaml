@@ -12,7 +12,7 @@ spec:
         runAsGroup: 65534
       containers:
       - name: run-memtier-benchmark
-        image: quay.io/kinvolk/benchmark-memtier
+        image: quay.io/kinvolk/benchmark-memtier:v0.2
         imagePullPolicy: Always
         command:
         - /usr/local/bin/run-benchmark.sh
