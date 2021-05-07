@@ -31,7 +31,7 @@ function install_emojivoto() {
 
     echo "Installing emojivoto."
 
-    for num in $(seq 0 1 49); do
+    for num in $(seq 0 1 39); do
         {
             kubectl create namespace emojivoto-$num
 
@@ -51,7 +51,7 @@ function install_emojivoto() {
 
 function restart_emojivoto_pods() {
 
-    for num in $(seq 0 1 49); do
+    for num in $(seq 0 1 39); do
         local ns="emojivoto-$num"
         echo "Restarting pods in $ns"
         {  local pods="$(kubectl get -n "$ns" pods | grep -vE '^NAME' | awk '{print $1}')"
@@ -67,7 +67,7 @@ function restart_emojivoto_pods() {
 function delete_emojivoto() {
     echo "Deleting emojivoto."
 
-    for i in $(seq 0 1 49); do
+    for i in $(seq 0 1 39); do
         { helm uninstall emojivoto-$i --namespace emojivoto-$i;
           kubectl delete namespace emojivoto-$i --wait; } &
     done
