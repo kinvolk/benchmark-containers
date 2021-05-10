@@ -27,3 +27,4 @@ spec:
         args:
         - {{ .Values.prometheusServiceUrl }}
         - {{ .Values.pushgatewayURL }}
+        - {{ .Values.exportedJobs }}
