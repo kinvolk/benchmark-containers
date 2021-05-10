@@ -2,13 +2,16 @@
 
 script_location="$(dirname "${BASH_SOURCE[0]}")"
 
-if [ "$#" -ne 2 ]; then
-    echo "usage: $0 EMOJIVOTO_INSTANCES MACHINE_TYPE"
+if [ "$#" -ne 5 ]; then
+    echo "usage: $0 EMOJIVOTO_INSTANCES MACHINE_TYPE INITIAL_RPS RPS_STEP FINAL_RPS"
     exit 1
 fi
 
 emojivoto_limit="$(( $1 - 1 ))"
 machine="$2"
+initial_rps="$3"
+rps_step="$4"
+final_rps="$5"
 
 if [ $emojivoto_limit -ge 35 ]; then
     kubectl calico apply -f - <<EOF
@@ -173,7 +176,7 @@ function run_bench() {
 # --
 
 function run_benchmarks() {
-    for rps in 1000 3000 5000; do
+    for rps in $(seq $initial_rps $rps_step $final_rps); do
         for repeat in 1 2; do
             echo "########## Run #$repeat w/ $rps RPS"
 
