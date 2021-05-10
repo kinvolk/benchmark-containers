@@ -1,0 +1,484 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 38,
+  "links": [],
+  "panels": [
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {},
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": []
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 20,
+        "x": 0,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 8,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": false
+      },
+      "percentage": false,
+      "pluginVersion": "7.4.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:598",
+          "alias": "aws r6g.metal",
+          "color": "#F2495C"
+        },
+        {
+          "$$hashKey": "object:1219",
+          "alias": "oci BM.Standard2.52",
+          "color": "#1F60C4"
+        },
+        {
+          "$$hashKey": "object:312",
+          "alias": "oci BM.Standard.A1.160",
+          "color": "#FADE2A"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"4\"}))",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "4 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"8\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "8 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"16\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "16 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"32\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "32 Threads"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Ops/s",
+      "tooltip": {
+        "shared": false,
+        "sort": 1,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "series",
+        "name": null,
+        "show": true,
+        "values": [
+          "total"
+        ]
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:317",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:318",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {},
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": []
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 20,
+        "x": 0,
+        "y": 8
+      },
+      "hiddenSeries": false,
+      "id": 9,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": false
+      },
+      "percentage": false,
+      "pluginVersion": "7.4.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:598",
+          "alias": "aws r6g.metal",
+          "color": "#F2495C"
+        },
+        {
+          "$$hashKey": "object:1219",
+          "alias": "oci BM.Standard2.52",
+          "color": "#1F60C4"
+        },
+        {
+          "$$hashKey": "object:312",
+          "alias": "oci BM.Standard.A1.160",
+          "color": "#FADE2A"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"4\"}))",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "4 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"8\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "8 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"16\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "16 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"32\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "32 Threads"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Kb/s",
+      "tooltip": {
+        "shared": false,
+        "sort": 1,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "series",
+        "name": null,
+        "show": true,
+        "values": [
+          "total"
+        ]
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:317",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:318",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {},
+          "custom": {},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": []
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 20,
+        "x": 0,
+        "y": 16
+      },
+      "hiddenSeries": false,
+      "id": 11,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": false
+      },
+      "percentage": false,
+      "pluginVersion": "7.4.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:598",
+          "alias": "aws r6g.metal",
+          "color": "#F2495C"
+        },
+        {
+          "$$hashKey": "object:1219",
+          "alias": "oci BM.Standard2.52",
+          "color": "#1F60C4"
+        },
+        {
+          "$$hashKey": "object:312",
+          "alias": "oci BM.Standard.A1.160",
+          "color": "#FADE2A"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"4\"}))",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "4 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"8\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "8 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"16\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "16 Threads"
+        },
+        {
+          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"32\"}))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{cloud}} {{exported_instance}}",
+          "refId": "32 Threads"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Latency",
+      "tooltip": {
+        "shared": false,
+        "sort": 1,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "series",
+        "name": null,
+        "show": true,
+        "values": [
+          "total"
+        ]
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:317",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:318",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Memtier redis summary dashboard",
+  "uid": "-oyToVCMz",
+  "version": 6
+}
