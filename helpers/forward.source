@@ -1,0 +1,7 @@
+#
+# Source this script to create port-forwards for lokomotive kubernetes 
+#
+
+kubectl port-forward -n monitoring svc/prometheus-operator-grafana 3000:80 \
+   & kubectl port-forward -n monitoring svc/prometheus-operated 9090:9090  \
+   & kubectl port-forward -n monitoring svc/pushgateway 9091:9091 &
