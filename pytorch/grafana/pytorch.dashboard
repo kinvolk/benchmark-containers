@@ -7,11 +7,11 @@
     "canStar": true,
     "slug": "pytorch",
     "expires": "0001-01-01T00:00:00Z",
-    "created": "2021-04-13T11:43:04Z",
-    "updated": "2021-04-14T11:28:49Z",
+    "created": "2021-05-06T16:44:04Z",
+    "updated": "2021-05-10T09:55:35Z",
     "updatedBy": "admin",
-    "createdBy": "admin",
-    "version": 23,
+    "createdBy": "Anonymous",
+    "version": 15,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -37,8 +37,8 @@
     "editable": true,
     "gnetId": null,
     "graphTooltip": 0,
-    "id": 25,
-    "iteration": 1618398488061,
+    "id": 29,
+    "iteration": 1620640430355,
     "links": [],
     "panels": [
       {
@@ -83,9 +83,10 @@
             "fields": "",
             "values": false
           },
+          "text": {},
           "textMode": "value_and_name"
         },
-        "pluginVersion": "7.2.1",
+        "pluginVersion": "7.4.3",
         "targets": [
           {
             "expr": "pytorch_benchmark_cpus{cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\"}",
@@ -103,10 +104,224 @@
         "datasource": null,
         "fieldConfig": {
           "defaults": {
-            "custom": {
-              "align": null,
-              "filterable": false
-            },
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 1,
+          "w": 10,
+          "x": 4,
+          "y": 0
+        },
+        "id": 15,
+        "options": {
+          "content": "",
+          "mode": "markdown"
+        },
+        "pluginVersion": "7.4.3",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Training",
+        "type": "text"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 1,
+          "w": 10,
+          "x": 14,
+          "y": 0
+        },
+        "id": 18,
+        "options": {
+          "content": "",
+          "mode": "markdown"
+        },
+        "pluginVersion": "7.4.3",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Evaluation",
+        "type": "text"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 2,
+          "w": 3,
+          "x": 4,
+          "y": 1
+        },
+        "id": 17,
+        "options": {
+          "content": "OPS (higher==better)\n<br/><hr style=\"margin:4px;\"/>\nOverall mean runtime (lower==better)",
+          "mode": "html"
+        },
+        "pluginVersion": "7.4.3",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "",
+        "type": "text"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [
+              {
+                "from": "-1",
+                "id": 1,
+                "text": "n/a",
+                "to": "-99999",
+                "type": 1,
+                "value": "0"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "dark-red",
+                  "value": null
+                },
+                {
+                  "color": "dark-yellow",
+                  "value": 100
+                },
+                {
+                  "color": "green",
+                  "value": 1500
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 1,
+          "w": 7,
+          "x": 7,
+          "y": 1
+        },
+        "id": 8,
+        "options": {
+          "displayMode": "lcd",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true,
+          "text": {}
+        },
+        "pluginVersion": "7.4.3",
+        "targets": [
+          {
+            "expr": "sum(pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"})",
+            "instant": false,
+            "interval": "",
+            "legendFormat": "OPS",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "",
+        "transformations": [],
+        "type": "bargauge"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "mappings": [
+              {
+                "from": "-1",
+                "id": 1,
+                "text": "n/a",
+                "to": "-99999",
+                "type": 1,
+                "value": "0"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "dark-red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 5000
+                },
+                {
+                  "color": "green",
+                  "value": 10000
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 1,
+          "w": 10,
+          "x": 14,
+          "y": 1
+        },
+        "id": 20,
+        "options": {
+          "displayMode": "lcd",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showUnfilled": true,
+          "text": {}
+        },
+        "pluginVersion": "7.4.3",
+        "targets": [
+          {
+            "expr": "sum(pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"})",
+            "instant": false,
+            "interval": "",
+            "legendFormat": "OPS",
+            "refId": "A"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "",
+        "transformations": [],
+        "type": "bargauge"
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
             "mappings": [
               {
                 "from": "-1",
@@ -125,8 +340,12 @@
                   "value": null
                 },
                 {
+                  "color": "#EAB839",
+                  "value": 500000000
+                },
+                {
                   "color": "red",
-                  "value": 80
+                  "value": 1000000000
                 }
               ]
             }
@@ -134,14 +353,14 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 3,
-          "w": 10,
-          "x": 4,
-          "y": 0
+          "h": 1,
+          "w": 7,
+          "x": 7,
+          "y": 2
         },
-        "id": 8,
+        "id": 13,
         "options": {
-          "displayMode": "gradient",
+          "displayMode": "lcd",
           "orientation": "horizontal",
           "reduceOptions": {
             "calcs": [
@@ -150,19 +369,15 @@
             "fields": "",
             "values": false
           },
-          "showUnfilled": true
+          "showUnfilled": true,
+          "text": {}
         },
-        "pluginVersion": "7.2.1",
+        "pluginVersion": "7.4.3",
         "targets": [
           {
-            "expr": "sum(pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"})",
-            "instant": true,
-            "interval": "",
-            "legendFormat": "OPS",
-            "refId": "A"
-          },
-          {
+            "exemplar": false,
             "expr": "sum(pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"mean\"})",
+            "instant": true,
             "interval": "",
             "legendFormat": "Sum of all  tests' mean runtimes",
             "refId": "B"
@@ -170,7 +385,7 @@
         ],
         "timeFrom": null,
         "timeShift": null,
-        "title": "Training phase",
+        "title": "",
         "transformations": [],
         "type": "bargauge"
       },
@@ -178,16 +393,13 @@
         "datasource": null,
         "fieldConfig": {
           "defaults": {
-            "custom": {
-              "align": null,
-              "filterable": false
-            },
+            "custom": {},
             "mappings": [
               {
-                "from": "",
+                "from": "-1",
                 "id": 1,
                 "text": "n/a",
-                "to": "",
+                "to": "-99999",
                 "type": 1,
                 "value": "0"
               }
@@ -200,8 +412,12 @@
                   "value": null
                 },
                 {
+                  "color": "#EAB839",
+                  "value": 10000000
+                },
+                {
                   "color": "red",
-                  "value": 80
+                  "value": 50000000
                 }
               ]
             }
@@ -209,14 +425,14 @@
           "overrides": []
         },
         "gridPos": {
-          "h": 3,
+          "h": 1,
           "w": 10,
           "x": 14,
-          "y": 0
+          "y": 2
         },
-        "id": 7,
+        "id": 21,
         "options": {
-          "displayMode": "gradient",
+          "displayMode": "lcd",
           "orientation": "horizontal",
           "reduceOptions": {
             "calcs": [
@@ -225,26 +441,23 @@
             "fields": "",
             "values": false
           },
-          "showUnfilled": true
+          "showUnfilled": true,
+          "text": {}
         },
-        "pluginVersion": "7.2.1",
+        "pluginVersion": "7.4.3",
         "targets": [
           {
-            "expr": "sum(pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"})",
-            "interval": "",
-            "legendFormat": "OPS",
-            "refId": "C"
-          },
-          {
+            "exemplar": false,
             "expr": "sum(pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"mean\"})",
+            "instant": true,
             "interval": "",
             "legendFormat": "Sum of all  tests' mean runtimes",
-            "refId": "D"
+            "refId": "B"
           }
         ],
         "timeFrom": null,
         "timeShift": null,
-        "title": "Evaluation phase",
+        "title": "",
         "transformations": [],
         "type": "bargauge"
       },
@@ -253,11 +466,7 @@
         "description": "",
         "fieldConfig": {
           "defaults": {
-            "custom": {
-              "align": null,
-              "displayMode": "auto",
-              "filterable": false
-            },
+            "custom": {},
             "mappings": [
               {
                 "from": "0",
@@ -352,9 +561,10 @@
             "limit": 5000,
             "values": false
           },
+          "text": {},
           "textMode": "auto"
         },
-        "pluginVersion": "7.2.1",
+        "pluginVersion": "7.4.3",
         "targets": [
           {
             "expr": "pytorch_benchmark_status{cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\"}",
@@ -423,9 +633,10 @@
             "fields": "",
             "values": false
           },
-          "showUnfilled": true
+          "showUnfilled": true,
+          "text": {}
         },
-        "pluginVersion": "7.2.1",
+        "pluginVersion": "7.4.3",
         "targets": [
           {
             "expr": "pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"median\"}",
@@ -460,16 +671,16 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "super-light-green",
+                  "color": "dark-red",
                   "value": null
                 },
                 {
-                  "color": "light-green",
-                  "value": 0
+                  "color": "yellow",
+                  "value": 0.01
                 },
                 {
-                  "color": "dark-red",
-                  "value": 500
+                  "color": "green",
+                  "value": 1
                 }
               ]
             }
@@ -493,9 +704,10 @@
             "fields": "",
             "values": false
           },
-          "showUnfilled": true
+          "showUnfilled": true,
+          "text": {}
         },
-        "pluginVersion": "7.2.1",
+        "pluginVersion": "7.4.3",
         "targets": [
           {
             "expr": "pytorch_benchmark_result{phase=\"train\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"}",
@@ -563,9 +775,10 @@
             "fields": "",
             "values": false
           },
-          "showUnfilled": true
+          "showUnfilled": true,
+          "text": {}
         },
-        "pluginVersion": "7.2.1",
+        "pluginVersion": "7.4.3",
         "targets": [
           {
             "expr": "pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"median\"}",
@@ -600,16 +813,16 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "super-light-green",
+                  "color": "dark-red",
                   "value": null
                 },
                 {
-                  "color": "light-green",
-                  "value": 0
+                  "color": "yellow",
+                  "value": 0.01
                 },
                 {
-                  "color": "dark-red",
-                  "value": 100
+                  "color": "green",
+                  "value": 1
                 }
               ]
             }
@@ -633,9 +846,10 @@
             "fields": "",
             "values": false
           },
-          "showUnfilled": true
+          "showUnfilled": true,
+          "text": {}
         },
-        "pluginVersion": "7.2.1",
+        "pluginVersion": "7.4.3",
         "targets": [
           {
             "expr": "pytorch_benchmark_result{phase=\"eval\",cloud=\"$cloud\",exported_instance=\"$shape\",run=\"$run\",metric=\"ops\"}",
@@ -651,8 +865,8 @@
         "type": "bargauge"
       }
     ],
-    "refresh": "5s",
-    "schemaVersion": 26,
+    "refresh": "",
+    "schemaVersion": 27,
     "style": "dark",
     "tags": [],
     "templating": {
@@ -670,13 +884,18 @@
           },
           "datasource": "Prometheus",
           "definition": "pytorch_benchmark_status",
+          "description": null,
+          "error": null,
           "hide": 0,
           "includeAll": false,
           "label": null,
           "multi": false,
           "name": "cloud",
           "options": [],
-          "query": "pytorch_benchmark_status",
+          "query": {
+            "query": "pytorch_benchmark_status",
+            "refId": "Prometheus-cloud-Variable-Query"
+          },
           "refresh": 2,
           "regex": "/.*cloud=\\\"([^\\\"]*).*/",
           "skipUrlSync": false,
@@ -696,13 +915,18 @@
           },
           "datasource": "Prometheus",
           "definition": "pytorch_benchmark_status{cloud=\"$cloud\"}",
+          "description": null,
+          "error": null,
           "hide": 0,
           "includeAll": false,
           "label": null,
           "multi": false,
           "name": "shape",
           "options": [],
-          "query": "pytorch_benchmark_status{cloud=\"$cloud\"}",
+          "query": {
+            "query": "pytorch_benchmark_status{cloud=\"$cloud\"}",
+            "refId": "Prometheus-shape-Variable-Query"
+          },
           "refresh": 2,
           "regex": "/.*exported_instance=\\\"([^\\\"]*).*/",
           "skipUrlSync": false,
@@ -722,13 +946,18 @@
           },
           "datasource": "Prometheus",
           "definition": "pytorch_benchmark_status{cloud=\"$cloud\",exported_instance=\"$shape\"}",
+          "description": null,
+          "error": null,
           "hide": 0,
           "includeAll": false,
           "label": null,
           "multi": false,
           "name": "run",
           "options": [],
-          "query": "pytorch_benchmark_status{cloud=\"$cloud\",exported_instance=\"$shape\"}",
+          "query": {
+            "query": "pytorch_benchmark_status{cloud=\"$cloud\",exported_instance=\"$shape\"}",
+            "refId": "Prometheus-run-Variable-Query"
+          },
           "refresh": 2,
           "regex": "/.*run=\\\"([^\\\"]*).*/",
           "skipUrlSync": false,
@@ -762,6 +991,6 @@
     "timezone": "",
     "title": "pytorch",
     "uid": null,
-    "version": 23
+    "version": 15
   }
 }
