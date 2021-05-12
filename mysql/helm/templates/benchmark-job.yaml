@@ -17,26 +17,23 @@ spec:
         securityContext:
           privileged: true
           allowPrivilegeEscalation: true
-        env:
-        - name: THREADS
-          value: "{{ .Values.threads }}"
-        - name: MYSQL_DATABASE
-          value: "{{ .Values.myqlDatabase }}"
-        - name: MYSQL_ITERATIONS
-          value: "{{ .Values.mysqlIterations }}"
-        - name: PUSHGATEWAY_URL
-          value: "{{ .Values.pushgatewayURL }}"
-        - name: CLOUD
-          value: "{{ .Values.cloud }}"
-        - name: INSTANCE
-          value: "{{ .Values.instance }}"
-        - name: JOBNAME
-          value: "{{ .Values.jobname }}"
         command:
-        - sh
+        - /usr/local/bin/run-benchmark.sh
         args:
-        - -c
-        - '/usr/local/bin/run-benchmark.sh'
+        - --threads
+        - "{{ .Values.threads }}"
+        - --mysql-db
+        - "{{ .Values.myqlDatabase }}"
+        - --iterations
+        - "{{ .Values.mysqlIterations }}"
+        - --cloud
+        - "{{ .Values.cloud }}"
+        - --instance
+        - "{{ .Values.instance }}"
+        - --job-name
+        - "{{ .Values.jobname }}"
+        - --push-gateway
+        - "{{ .Values.pushgatewayURL }}"
         volumeMounts:
         - mountPath: /tmp/
           name: tmp-dir

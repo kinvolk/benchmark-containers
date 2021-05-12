@@ -14,7 +14,7 @@ else
     echo "[i] MySQL root Password: $MYSQL_ROOT_PASSWORD"
   fi
 
-  MYSQL_DATABASE=${MYSQL_DATABASE:-""}
+  MYSQL_DATABASE="${1}"
   MYSQL_USER=${MYSQL_USER:-""}
   MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
 

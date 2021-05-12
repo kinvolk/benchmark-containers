@@ -1,28 +1,27 @@
-# This script has no hashbang as it's intended to run on systems with ash or
-# bash, including busybox.
+#!/bin/sh
 set -eu
 
 . /usr/local/bin/output.sh
 
 usage() {
   cat <<EOF
-Usage: run-benchmark.sh [-h] [-v] [-y benchmark_type] [-t threads]
+Usage: run-benchmark.sh [-h] [-v] [-t threads] [-d --mysql-db]
                         $(output_options_short)
 
-Run the sysbench benchmark
+Run the mysql benchmark
 
 Available options:
 
 -h, --help       Print this help and exit
 -v, --verbose    Print script debug info
--t, --threads    Amount of threads to use for the benchmark (default: 1)
+-t, --threads    Amount of threads to use for the benchmark (default: 1). Optionally a semicolon separated list.
+-d, --mysql-db   Database to create in MySQL.
 $(output_options_long)
 EOF
   exit
 }
 
 parse_params() {
-  TYPE=""
   THREADS=1
 
   parse_output_params "$@"
@@ -33,7 +32,11 @@ parse_params() {
     -h | --help) usage ;;
     -v | --verbose) set -x ;;
     -t | --threads)
-      THREADS="${2-}"
+      ARG_THREADS="${2-}"
+      shift
+      ;;
+    -d | --mysql-db)
+      MYSQL_DATABASE="${2-}"
       shift
       ;;
     *) ;; # Skip unknown params
@@ -43,14 +46,6 @@ parse_params() {
 }
 
 parse_params "$@"
-
-THREADS=${THREADS}
-MYSQL_DATABASE=${MYSQL_DATABASE}
-MYSQL_ITERATIONS=${MYSQL_ITERATIONS}
-PUSHGATEWAY_URL=${PUSHGATEWAY_URL}
-CLOUD=${CLOUD}
-INSTANCE=${INSTANCE}
-JOBNAME=${JOBNAME}
 
 SYSTEM=$(/usr/local/bin/cpu.sh system)
 PARAMS="--threads=$THREADS"
@@ -81,8 +76,10 @@ end
 sysbench.hooks.report_intermediate = sysbench.report_json
 EOF
 
-echo "This is iterations $MYSQL_ITERATIONS"
-for I in $(seq 1 $MYSQL_ITERATIONS); do
+BENCHMARK_NAME="mysql"
+
+echo "This is iterations $ITERATIONS"
+for I in $(seq 1 $ITERATIONS); do
   ts=$(date -Iseconds | sed -e 's/T/__/' -e 's/+.*//')
   echo "Preparing benchmark"
   sysbench $PARAMS --db-driver=mysql --mysql-user=root --tables=16 --table-size=10000 --mysql-db="$MYSQL_DATABASE" /usr/local/share/sysbench/oltp_read_write.lua prepare
@@ -112,8 +109,8 @@ for I in $(seq 1 $MYSQL_ITERATIONS); do
   sed -n '18,/Time limit exceeded, exiting.../p' /tmp/output-$I.txt | sed 's/Time limit exceeded, exiting...//' | sed '${s/$/]/}' > output-$I.json
   sed -i 's|^DEBUG.*||g; s|^Threads started.*||g' /tmp/output-$I.json
 
-  cat <<EOF | curl --data-binary @- $PUSHGATEWAY_URL/metrics/job/$JOBNAME/cloud/$CLOUD/instance/$INSTANCE/run/$ts
-
+  RUN_ID="$ts"
+  read -d '' metrics <<EOF || true
     # TYPE mysql_general_statistics_total_ gauge
     $(echo "mysql_general_statistics_total_time ${total_time}")
     $(echo "mysql_general_statistics_total_events ${total_events}")
@@ -139,6 +136,6 @@ for I in $(seq 1 $MYSQL_ITERATIONS); do
     $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_qps_reads{time="+ "\"" + (.time|tostring) + "\"} " + (.qps.reads|tostring)')
     $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_qps_writes{time="+ "\"" + (.time|tostring) + "\"} " + (.qps.writes|tostring)')
     $(cat /tmp/output-1.json | jq -r '.[] | "mysql_benchmark_result_qps_other{time="+ "\"" + (.time|tostring) + "\"} " + (.qps.other|tostring)')
-
 EOF
+  push_metrics "$metrics"
 done
