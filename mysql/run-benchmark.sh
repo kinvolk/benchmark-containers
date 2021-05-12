@@ -82,13 +82,19 @@ echo "This is iterations $ITERATIONS"
 for I in $(seq 1 $ITERATIONS); do
   ts=$(date -Iseconds | sed -e 's/T/__/' -e 's/+.*//')
   echo "Preparing benchmark"
-  sysbench $PARAMS --db-driver=mysql --mysql-user=root --tables=16 --table-size=10000 --mysql-db="$MYSQL_DATABASE" /usr/local/share/sysbench/oltp_read_write.lua prepare
+  sysbench $PARAMS --db-driver=mysql --mysql-user=root --tables=16 --table-size=1000000 \
+    --rand-type=uniform --mysql-db="$MYSQL_DATABASE" /usr/local/share/sysbench/oltp_read_write.lua \
+    prepare
 
   echo "Running benchmark"
-  sysbench $PARAMS --db-driver=mysql --mysql-user=root --tables=16 --table-size=10000 --mysql-db="$MYSQL_DATABASE" --time=5 --report-interval=1 --verbosity=5 --rate=40 --events=0 /tmp/output_json.lua run > /tmp/output-$I.txt
+  sysbench $PARAMS --db-driver=mysql --mysql-user=root --tables=16 --table-size=1000000 \
+    --rand-type=uniform --mysql-db="$MYSQL_DATABASE" --time=100 --report-interval=1 --verbosity=5 \
+    --rate=40 --events=0 /tmp/output_json.lua run > /tmp/output-$I.txt
 
   echo "Running cleanup"
-  sysbench $PARAMS --db-driver=mysql --mysql-user=root --tables=16 --table-size=10000 --mysql-db="$MYSQL_DATABASE" /usr/local/share/sysbench/oltp_read_write.lua cleanup
+  sysbench $PARAMS --db-driver=mysql --mysql-user=root --tables=16 --table-size=1000000 \
+    --rand-type=uniform --mysql-db="$MYSQL_DATABASE" /usr/local/share/sysbench/oltp_read_write.lua \
+    cleanup
 
   # General Statistics
   total_time=$(cat /tmp/output-$I.txt | grep -A 3 "General statistics" | grep "total time:" |cut -d":" -f2| xargs | cut -d "s" -f1)
