@@ -87,14 +87,14 @@ benchmark() {
   for I in $(seq 1 $ITERATIONS); do
     ts=$(date -Iseconds | sed -e 's/T/__/' -e 's/+.*//')
     echo "[i] Preparing benchmark"
-    sysbench $PARAMS /usr/share/sysbench/oltp_read_write.lua prepare
+    sysbench $PARAMS /usr/share/sysbench/oltp_read_only.lua prepare
 
     echo "[i] Running benchmark"
-    sysbench $PARAMS --time=100 --report-interval=1 --verbosity=5 --rate=40 --events=0 \
+    sysbench $PARAMS --time=200 --report-interval=1 --verbosity=5 --rate=40 --events=0 \
       /tmp/output_json.lua run > /tmp/output-$I.txt
 
     echo "[i] Running cleanup"
-    sysbench $PARAMS /usr/share/sysbench/oltp_read_write.lua cleanup
+    sysbench $PARAMS /usr/share/sysbench/oltp_read_only.lua cleanup
 
     # General Statistics
     total_time=$(cat /tmp/output-$I.txt | grep -A 3 "General statistics" | grep "total time:" |cut -d":" -f2| xargs | cut -d "s" -f1)
