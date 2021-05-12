@@ -108,6 +108,7 @@ for I in $(seq 1 $MYSQL_ITERATIONS); do
 
   # JSON data extracted from txt file and converted to json
   sed -n '18,/Time limit exceeded, exiting.../p' /tmp/output-$I.txt | sed 's/Time limit exceeded, exiting...//' | sed '${s/$/]/}' > output-$I.json
+  sed -i 's|^DEBUG.*||g; s|^Threads started.*||g' /tmp/output-$I.json
 
   cat <<EOF | curl --data-binary @- $PUSHGATEWAY_URL/metrics/job/$JOBNAME/cloud/$CLOUD/instance/$INSTANCE/run/$ts
 
