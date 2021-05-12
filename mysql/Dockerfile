@@ -1,29 +1,13 @@
-FROM alpine as builder
-WORKDIR /sysbench
-LABEL maintainer="Kinvolk"
-ENV SYSBENCH_VER=1.0.20
-ADD https://github.com/akopytov/sysbench/archive/${SYSBENCH_VER}.tar.gz .
-RUN apk add --update alpine-sdk git linux-headers automake autoconf libtool libaio-dev openssl-dev libunwind-dev mysql-dev
-RUN tar -xf ${SYSBENCH_VER}.tar.gz && \
-  cd sysbench-${SYSBENCH_VER} && \
-  export TARGET_LIBS=-lunwind;./autogen.sh && \
-  ./configure && \
-  make -j && \
-  make DESTDIR=/sysbench/sysbench-install-root/ install
+# docker build -t benchmark-base-debian --file=../common/Dockerfile.debian ../common/
+FROM mysql:8
 
-FROM benchmark-base
 LABEL maintainer="Kinvolk"
 
-# sysbench
-RUN apk add --update --no-cache so:libgcc_s.so.1 so:libmariadb.so.3 so:libaio.so.1 curl jq mysql mysql-client && rm -f /var/cache/apk/*
-COPY --from=builder /sysbench/sysbench-install-root/ /
+RUN apt-get update && \
+    apt-get install -y curl psmisc && \
+    curl https://packagecloud.io/install/repositories/akopytov/sysbench/script.deb.sh | bash && \
+    apt -y install sysbench
 
-VOLUME [ "/var/lib/mysql" ]
+COPY --from=benchmark-base-debian /usr/local/bin/cpu.sh /usr/local/bin/output.sh /usr/local/bin/
+COPY run-server.sh run-benchmark.sh /usr/local/bin/
 COPY my.cnf /etc/mysql/my.cnf
-# Runnable scripts
-COPY run-server.sh /usr/local/bin/run-server.sh
-COPY run-benchmark.sh /usr/local/bin/run-benchmark.sh
-
-# To start mysql server
-RUN chmod 755 /usr/local/bin/run-server.sh
-RUN chmod 755 /usr/local/bin/run-benchmark.sh

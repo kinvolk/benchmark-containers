@@ -1,0 +1,6 @@
+# This container is the basis for all the other benchmark containers based on Debian.
+FROM debian:buster-slim
+LABEL maintainer="Kinvolk"
+
+# Common script
+COPY cpu.sh output.sh /usr/local/bin/
