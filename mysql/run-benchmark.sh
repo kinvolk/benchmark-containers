@@ -59,6 +59,8 @@ echo "Starting the database server..."
 # Run the mysql server
 /usr/local/bin/run-server.sh "${MYSQL_DATABASE}" &
 
+trap 'killall mysqld || true' SIGHUP SIGTERM SIGINT EXIT
+
 # Check connection to mysql
 until mysql -u root -e ";" ; do
   sleep 1
@@ -140,5 +142,3 @@ for I in $(seq 1 $MYSQL_ITERATIONS); do
 
 EOF
 done
-
-killall mysqld || true
