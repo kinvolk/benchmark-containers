@@ -11,4 +11,4 @@ else
   /usr/sbin/mysqld --user=root --initialize-insecure --verbose=0
 fi
 
-exec /usr/sbin/mysqld --user=root --console
+exec /usr/sbin/mysqld --user=root --console --disable-log-bin
