@@ -12,7 +12,7 @@ spec:
         runAsUser: 0
       containers:
       - name: run-mysql-benchmark
-        image: quay.io/kinvolk/benchmark-mysql:v1
+        image: quay.io/kinvolk/benchmark-mysql:v1.2
         imagePullPolicy: Always
         securityContext:
           privileged: true

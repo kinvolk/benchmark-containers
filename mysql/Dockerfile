@@ -1,13 +1,15 @@
-# docker build -t benchmark-base-debian --file=../common/Dockerfile.debian ../common/
-FROM mysql:8
+# docker build -t benchmark-base-centos --file=../common/Dockerfile.centos ../common/
+FROM centos:7
 
 LABEL maintainer="Kinvolk"
 
-RUN apt-get update && \
-    apt-get install -y curl psmisc && \
-    curl https://packagecloud.io/install/repositories/akopytov/sysbench/script.deb.sh | bash && \
-    apt -y install sysbench
+RUN yum install -y https://repo.mysql.com/mysql-community-release-el7.rpm && \
+    yum install -y epel-release && \
+    yum install -y mysql mysql-server jq psmisc && \
+    curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.rpm.sh | bash && \
+    yum -y install sysbench && \
+    yum clean all
 
-COPY --from=benchmark-base-debian /usr/local/bin/cpu.sh /usr/local/bin/output.sh /usr/local/bin/
+COPY --from=benchmark-base-centos /usr/local/bin/cpu.sh /usr/local/bin/output.sh /usr/local/bin/
 COPY run-server.sh run-benchmark.sh /usr/local/bin/
 COPY my.cnf /etc/mysql/my.cnf
