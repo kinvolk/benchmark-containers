@@ -1,29 +1,15 @@
-FROM alpine as builder
-WORKDIR /sysbench
-LABEL maintainer="Kinvolk"
-ENV SYSBENCH_VER=1.0.20
-ADD https://github.com/akopytov/sysbench/archive/${SYSBENCH_VER}.tar.gz .
-RUN apk add --update alpine-sdk git linux-headers automake autoconf libtool libaio-dev openssl-dev libunwind-dev mysql-dev
-RUN tar -xf ${SYSBENCH_VER}.tar.gz && \
-  cd sysbench-${SYSBENCH_VER} && \
-  export TARGET_LIBS=-lunwind;./autogen.sh && \
-  ./configure && \
-  make -j && \
-  make DESTDIR=/sysbench/sysbench-install-root/ install
+# docker build -t benchmark-base-centos --file=../common/Dockerfile.centos ../common/
+FROM centos:7
 
-FROM benchmark-base
 LABEL maintainer="Kinvolk"
 
-# sysbench
-RUN apk add --update --no-cache so:libgcc_s.so.1 so:libmariadb.so.3 so:libaio.so.1 curl jq mysql mysql-client && rm -f /var/cache/apk/*
-COPY --from=builder /sysbench/sysbench-install-root/ /
+RUN yum install -y https://repo.mysql.com/mysql-community-release-el7.rpm && \
+    yum install -y epel-release && \
+    yum install -y mysql mysql-server jq psmisc && \
+    curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.rpm.sh | bash && \
+    yum -y install sysbench && \
+    yum clean all
 
-VOLUME [ "/var/lib/mysql" ]
+COPY --from=benchmark-base-centos /usr/local/bin/cpu.sh /usr/local/bin/output.sh /usr/local/bin/
+COPY run-server.sh run-benchmark.sh /usr/local/bin/
 COPY my.cnf /etc/mysql/my.cnf
-# Runnable scripts
-COPY run-server.sh /usr/local/bin/run-server.sh
-COPY run-benchmark.sh /usr/local/bin/run-benchmark.sh
-
-# To start mysql server
-RUN chmod 755 /usr/local/bin/run-server.sh
-RUN chmod 755 /usr/local/bin/run-benchmark.sh
