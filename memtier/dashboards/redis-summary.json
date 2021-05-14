@@ -1,484 +1,2284 @@
 {
-  "annotations": {
-    "list": [
+  "meta": {
+    "type": "db",
+    "canSave": true,
+    "canEdit": true,
+    "canAdmin": true,
+    "canStar": true,
+    "slug": "memtier-redis-summary-dashboard",
+    "expires": "0001-01-01T00:00:00Z",
+    "created": "2021-05-12T15:11:59Z",
+    "updated": "2021-05-14T10:27:23Z",
+    "updatedBy": "admin",
+    "createdBy": "admin",
+    "version": 5,
+    "hasAcl": false,
+    "isFolder": false,
+    "folderId": 0,
+    "folderTitle": "General",
+    "folderUrl": "",
+    "provisioned": false,
+    "provisionedExternalId": ""
+  },
+  "dashboard": {
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "gnetId": null,
+    "graphTooltip": 0,
+    "id": 33,
+    "links": [],
+    "panels": [
       {
-        "builtIn": 1,
-        "datasource": "-- Grafana --",
-        "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
-        "type": "dashboard"
-      }
-    ]
-  },
-  "editable": true,
-  "gnetId": null,
-  "graphTooltip": 0,
-  "id": 38,
-  "links": [],
-  "panels": [
-    {
-      "aliasColors": {},
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {},
-          "custom": {},
-          "thresholds": {
-            "mode": "absolute",
-            "steps": []
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
           },
-          "unit": "short"
+          "overrides": []
         },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 20,
-        "x": 0,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 8,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": false,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": false
-      },
-      "percentage": false,
-      "pluginVersion": "7.4.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:598",
-          "alias": "aws r6g.metal",
-          "color": "#F2495C"
+        "gridPos": {
+          "h": 1,
+          "w": 20,
+          "x": 0,
+          "y": 0
         },
-        {
-          "$$hashKey": "object:1219",
-          "alias": "oci BM.Standard2.52",
-          "color": "#1F60C4"
+        "id": 16,
+        "options": {
+          "content": "",
+          "mode": "html"
         },
-        {
-          "$$hashKey": "object:312",
-          "alias": "oci BM.Standard.A1.160",
-          "color": "#FADE2A"
+        "pluginVersion": "7.4.3",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Operations per second",
+        "type": "text"
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 0,
+          "y": 1
+        },
+        "hiddenSeries": false,
+        "id": 8,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"4\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "4 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": "5000",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
         }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"4\"}))",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "4 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"8\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "8 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"16\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "16 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"32\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "32 Threads"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Ops/s",
-      "tooltip": {
-        "shared": false,
-        "sort": 1,
-        "value_type": "individual"
       },
-      "transformations": [],
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "series",
-        "name": null,
-        "show": true,
-        "values": [
-          "total"
-        ]
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:317",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
         },
-        {
-          "$$hashKey": "object:318",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 5,
+          "y": 1
+        },
+        "hiddenSeries": false,
+        "id": 18,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"8\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "8 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": "5000",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
         }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 10,
+          "y": 1
+        },
+        "hiddenSeries": false,
+        "id": 19,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"16\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "16 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": "5000",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 15,
+          "y": 1
+        },
+        "hiddenSeries": false,
+        "id": 20,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_ops_sec{exported_job=\"memtier_redis\",threads=\"32\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "32 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": "5000",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 1,
+          "w": 20,
+          "x": 0,
+          "y": 9
+        },
+        "id": 17,
+        "options": {
+          "content": "",
+          "mode": "html"
+        },
+        "pluginVersion": "7.4.3",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Throughput",
+        "type": "text"
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "KBs"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 0,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 21,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"4\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "4 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "KBs",
+            "label": null,
+            "logBase": 1,
+            "max": "1500000",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "KBs"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 5,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 22,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"8\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "8 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "KBs",
+            "label": null,
+            "logBase": 1,
+            "max": "1500000",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "KBs"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 10,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 23,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"16\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "16 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "KBs",
+            "label": null,
+            "logBase": 1,
+            "max": "1500000",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "KBs"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 15,
+          "y": 10
+        },
+        "hiddenSeries": false,
+        "id": 24,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"32\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "32 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "KBs",
+            "label": null,
+            "logBase": 1,
+            "max": "1500000",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "datasource": null,
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 1,
+          "w": 20,
+          "x": 0,
+          "y": 18
+        },
+        "id": 25,
+        "options": {
+          "content": "",
+          "mode": "html"
+        },
+        "pluginVersion": "7.4.3",
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Latency",
+        "type": "text"
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 0,
+          "y": 19
+        },
+        "hiddenSeries": false,
+        "id": 26,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"4\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "4 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": "1600",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 5,
+          "y": 19
+        },
+        "hiddenSeries": false,
+        "id": 27,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"8\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "8 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": "1600",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 10,
+          "y": 19
+        },
+        "hiddenSeries": false,
+        "id": 28,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"16\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "16 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": "1600",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": true,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": null,
+        "fieldConfig": {
+          "defaults": {
+            "color": {},
+            "custom": {},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": []
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard2.52/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> Intel <br />  Standard2 <br /> (52 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.E4.128/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br /> AMD <br /> Standard.E4 <br /> (128 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/BM.Standard.A1.160/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "OCI <br />  Ampere A1 <br /> Standard.A1<br />  (160 cores)"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/aws/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "AWS <br />  Graviton2 <br /> rg6.metal<br />(64 cores)"
+                }
+              ]
+            }
+          ]
+        },
+        "fill": 1,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 8,
+          "w": 5,
+          "x": 15,
+          "y": 19
+        },
+        "hiddenSeries": false,
+        "id": 29,
+        "legend": {
+          "alignAsTable": false,
+          "avg": false,
+          "current": false,
+          "max": false,
+          "min": false,
+          "show": false,
+          "total": false,
+          "values": false
+        },
+        "lines": false,
+        "linewidth": 1,
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": false
+        },
+        "percentage": false,
+        "pluginVersion": "7.4.3",
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [
+          {
+            "$$hashKey": "object:598",
+            "alias": "/Graviton2/",
+            "color": "#F2495C"
+          },
+          {
+            "$$hashKey": "object:1219",
+            "alias": "/Intel/",
+            "color": "#1F60C4"
+          },
+          {
+            "$$hashKey": "object:312",
+            "alias": "/Ampere/",
+            "color": "#FADE2A"
+          },
+          {
+            "$$hashKey": "object:1573",
+            "alias": "/AMD/",
+            "color": "#8AB8FF"
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"32\"}))",
+            "format": "time_series",
+            "instant": true,
+            "interval": "",
+            "legendFormat": "{{cloud}} <br /> {{exported_instance}}",
+            "refId": "4 Threads"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "32 Threads",
+        "tooltip": {
+          "shared": false,
+          "sort": 1,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "series",
+          "name": null,
+          "show": true,
+          "values": [
+            "total"
+          ]
+        },
+        "yaxes": [
+          {
+            "$$hashKey": "object:317",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": "1600",
+            "min": null,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:318",
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": false
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
       }
+    ],
+    "schemaVersion": 27,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": []
     },
-    {
-      "aliasColors": {},
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {},
-          "custom": {},
-          "thresholds": {
-            "mode": "absolute",
-            "steps": []
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 20,
-        "x": 0,
-        "y": 8
-      },
-      "hiddenSeries": false,
-      "id": 9,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": false,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": false
-      },
-      "percentage": false,
-      "pluginVersion": "7.4.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:598",
-          "alias": "aws r6g.metal",
-          "color": "#F2495C"
-        },
-        {
-          "$$hashKey": "object:1219",
-          "alias": "oci BM.Standard2.52",
-          "color": "#1F60C4"
-        },
-        {
-          "$$hashKey": "object:312",
-          "alias": "oci BM.Standard.A1.160",
-          "color": "#FADE2A"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"4\"}))",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "4 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"8\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "8 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"16\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "16 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_kb_sec{exported_job=\"memtier_redis\",threads=\"32\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "32 Threads"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Kb/s",
-      "tooltip": {
-        "shared": false,
-        "sort": 1,
-        "value_type": "individual"
-      },
-      "transformations": [],
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "series",
-        "name": null,
-        "show": true,
-        "values": [
-          "total"
-        ]
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:317",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:318",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+    "time": {
+      "from": "now-6h",
+      "to": "now"
     },
-    {
-      "aliasColors": {},
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {},
-          "custom": {},
-          "thresholds": {
-            "mode": "absolute",
-            "steps": []
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 20,
-        "x": 0,
-        "y": 16
-      },
-      "hiddenSeries": false,
-      "id": 11,
-      "legend": {
-        "alignAsTable": false,
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": false,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": false
-      },
-      "percentage": false,
-      "pluginVersion": "7.4.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:598",
-          "alias": "aws r6g.metal",
-          "color": "#F2495C"
-        },
-        {
-          "$$hashKey": "object:1219",
-          "alias": "oci BM.Standard2.52",
-          "color": "#1F60C4"
-        },
-        {
-          "$$hashKey": "object:312",
-          "alias": "oci BM.Standard.A1.160",
-          "color": "#FADE2A"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"4\"}))",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "4 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"8\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "8 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"16\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "16 Threads"
-        },
-        {
-          "expr": "sort(avg without (run,process) (memtier_all_stats_totals_latency{exported_job=\"memtier_redis\",threads=\"32\"}))",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{cloud}} {{exported_instance}}",
-          "refId": "32 Threads"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Latency",
-      "tooltip": {
-        "shared": false,
-        "sort": 1,
-        "value_type": "individual"
-      },
-      "transformations": [],
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "series",
-        "name": null,
-        "show": true,
-        "values": [
-          "total"
-        ]
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:317",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:318",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    }
-  ],
-  "schemaVersion": 27,
-  "style": "dark",
-  "tags": [],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now-6h",
-    "to": "now"
-  },
-  "timepicker": {},
-  "timezone": "",
-  "title": "Memtier redis summary dashboard",
-  "uid": "-oyToVCMz",
-  "version": 6
+    "timepicker": {},
+    "timezone": "",
+    "title": "Memtier redis summary dashboard",
+    "uid": null,
+    "version": 5
+  }
 }
