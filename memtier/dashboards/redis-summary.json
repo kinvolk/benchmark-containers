@@ -8,10 +8,10 @@
     "slug": "memtier-redis-summary-dashboard",
     "expires": "0001-01-01T00:00:00Z",
     "created": "2021-05-12T15:11:59Z",
-    "updated": "2021-05-14T10:27:23Z",
+    "updated": "2021-05-14T12:07:20Z",
     "updatedBy": "admin",
     "createdBy": "admin",
-    "version": 5,
+    "version": 8,
     "hasAcl": false,
     "isFolder": false,
     "folderId": 0,
@@ -62,7 +62,7 @@
         "pluginVersion": "7.4.3",
         "timeFrom": null,
         "timeShift": null,
-        "title": "Operations per second",
+        "title": "Operations per second (higher is better)",
         "type": "text"
       },
       {
@@ -803,7 +803,7 @@
         "pluginVersion": "7.4.3",
         "timeFrom": null,
         "timeShift": null,
-        "title": "Throughput",
+        "title": "Throughput (higher is better)",
         "type": "text"
       },
       {
@@ -1545,7 +1545,7 @@
         "pluginVersion": "7.4.3",
         "timeFrom": null,
         "timeShift": null,
-        "title": "Latency",
+        "title": "Latency (lower is better)",
         "type": "text"
       },
       {
@@ -2279,6 +2279,6 @@
     "timezone": "",
     "title": "Memtier redis summary dashboard",
     "uid": null,
-    "version": 5
+    "version": 8
   }
 }
