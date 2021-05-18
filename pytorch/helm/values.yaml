@@ -16,12 +16,12 @@ filterTests: not Background_Matting and not Super_SloMo and not dlrm-cpu-jit and
 #    Defaults to http://monitoring.pushgateway:9091/
 # customPushgwURL: http://some.other.cluster:12345/
 
-# nodeSelector:
-#   role: benchmark
+nodeSelector:
+  role: benchmark
 
-# tolerations:
-# - key: role
-#   operator: Equal
-#   value: benchmark
-#   effect: NoSchedule
+tolerations:
+- key: role
+  operator: Equal
+  value: benchmark
+  effect: NoSchedule
 
