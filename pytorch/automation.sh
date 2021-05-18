@@ -48,7 +48,7 @@ pytorch_get_status() {
     local kubeconfig="$1"
 
     export KUBECONFIG="$kubeconfig"
-    # prints the fist part of completion status, e.g. "0" when status is "0/1"
+    # prints the first part of completion status, e.g. "0" when status is "0/1"
     kubectl get jobs -n pytorch-benchmark | awk '/pytorch-benchmark/ {print substr($2,1,1)}'
     export KUBECONFIG=""
 }
